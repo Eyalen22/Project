@@ -1,10 +1,10 @@
-<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36" version="29.2.5">
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36" version="29.2.9">
   <diagram name="‫עמוד-1‬" id="czvyQxKxU9FHbgQYERCD">
-    <mxGraphModel dx="983" dy="512" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="815" dy="425" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="4wrwR4QKGK6ixNILMiC3-1" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="DOKפענוח קבצי ה" vertex="1">
+        <mxCell id="4wrwR4QKGK6ixNILMiC3-1" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="פענוח קובץ" vertex="1">
           <mxGeometry height="30" width="180" x="323" y="160" as="geometry" />
         </mxCell>
         <mxCell id="4wrwR4QKGK6ixNILMiC3-38" parent="1" style="whiteSpace=wrap;html=1;aspect=fixed;" value="" vertex="1">
@@ -74,6 +74,24 @@
         </mxCell>
         <mxCell id="4wrwR4QKGK6ixNILMiC3-55" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" value="Actor" vertex="1">
           <mxGeometry height="60" width="30" x="703" y="310" as="geometry" />
+        </mxCell>
+        <mxCell id="shRW13ozmFkbMpTM4Cme-1" edge="1" parent="1" source="4wrwR4QKGK6ixNILMiC3-44" style="endArrow=classic;startArrow=classic;html=1;rounded=0;fontSize=12;startSize=8;endSize=8;curved=1;entryX=0.197;entryY=0.653;entryDx=0;entryDy=0;entryPerimeter=0;" target="shRW13ozmFkbMpTM4Cme-2" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="560" y="300" as="sourcePoint" />
+            <mxPoint x="597.56" y="290.43999999999994" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="shRW13ozmFkbMpTM4Cme-2" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#1ba1e2;strokeColor=#006EAF;fontColor=#ffffff;" value="&lt;br&gt;&lt;span style=&quot;color: rgb(0, 0, 0); font-family: Helvetica; font-size: 7px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: center; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(236, 236, 236); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; float: none; display: inline !important;&quot;&gt;זיהוי סגירת &lt;br&gt;קובץ&lt;/span&gt;&lt;div&gt;&lt;br/&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="35" width="50" x="586" y="259" as="geometry" />
+        </mxCell>
+        <mxCell id="shRW13ozmFkbMpTM4Cme-3" parent="1" style="image;html=1;image=img/lib/clip_art/general/Full_Folder_128x128.png" value="" vertex="1">
+          <mxGeometry height="70" width="60" x="674" y="194" as="geometry" />
+        </mxCell>
+        <mxCell id="shRW13ozmFkbMpTM4Cme-4" edge="1" parent="1" source="shRW13ozmFkbMpTM4Cme-2" style="endArrow=classic;html=1;rounded=0;exitX=0.921;exitY=0.371;exitDx=0;exitDy=0;exitPerimeter=0;" target="shRW13ozmFkbMpTM4Cme-3" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="464" y="434" as="sourcePoint" />
+            <mxPoint x="734" y="294" as="targetPoint" />
+          </mxGeometry>
         </mxCell>
       </root>
     </mxGraphModel>

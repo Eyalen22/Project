@@ -1,10 +1,10 @@
-<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36" version="29.2.5">
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36" version="29.2.9">
   <diagram name="‫עמוד-1‬" id="iR8W1_vldABDmWDy9pPu">
     <mxGraphModel dx="983" dy="512" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="XGX94dVYu0xUFzfDdFTe-2" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="USBשליחת הודעות למייל באת מחיקת ה" vertex="1">
+        <mxCell id="XGX94dVYu0xUFzfDdFTe-2" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="USBשליחת הודעות למייל בעת מחיקת ה" vertex="1">
           <mxGeometry height="30" width="210" x="270" y="170" as="geometry" />
         </mxCell>
         <mxCell id="XGX94dVYu0xUFzfDdFTe-3" parent="1" style="whiteSpace=wrap;html=1;aspect=fixed;" value="" vertex="1">
@@ -129,6 +129,24 @@
         </mxCell>
         <mxCell id="XGX94dVYu0xUFzfDdFTe-32" parent="1" style="dashed=0;outlineConnect=0;html=1;align=center;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;shape=mxgraph.weblogos.gmail" value="" vertex="1">
           <mxGeometry height="46.800000000000004" width="64.8" x="279.2" y="431.6" as="geometry" />
+        </mxCell>
+        <mxCell id="06H772ZgkY58eDT1ObaC-3" parent="1" style="image;html=1;image=img/lib/clip_art/general/Full_Folder_128x128.png" value="" vertex="1">
+          <mxGeometry height="70" width="60" x="520" y="450" as="geometry" />
+        </mxCell>
+        <mxCell id="06H772ZgkY58eDT1ObaC-5" edge="1" parent="1" source="06H772ZgkY58eDT1ObaC-3" style="endArrow=classic;startArrow=classic;html=1;rounded=0;fontSize=12;startSize=8;endSize=8;curved=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="06H772ZgkY58eDT1ObaC-6" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="540" y="400" as="sourcePoint" />
+            <mxPoint x="600" y="380" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="06H772ZgkY58eDT1ObaC-6" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#ffe6cc;strokeColor=#d79b00;" value="&lt;font style=&quot;font-size: 8px;&quot;&gt;מחיקת קבצים&lt;/font&gt;" vertex="1">
+          <mxGeometry height="40" width="40" x="520" y="360" as="geometry" />
+        </mxCell>
+        <mxCell id="06H772ZgkY58eDT1ObaC-8" edge="1" parent="1" source="06H772ZgkY58eDT1ObaC-6" style="endArrow=classic;startArrow=classic;html=1;rounded=0;fontSize=12;startSize=8;endSize=8;curved=1;exitX=1;exitY=0;exitDx=0;exitDy=0;entryX=0.382;entryY=1.002;entryDx=0;entryDy=0;entryPerimeter=0;" target="XGX94dVYu0xUFzfDdFTe-8" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="600" y="410" as="sourcePoint" />
+            <mxPoint x="600" y="360" as="targetPoint" />
+          </mxGeometry>
         </mxCell>
       </root>
     </mxGraphModel>
