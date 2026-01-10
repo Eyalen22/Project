@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36" version="29.2.9">
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36" version="29.3.0">
   <diagram name="‫עמוד-1‬" id="cqtuk8NlW4r8L3vDVe9R">
-    <mxGraphModel dx="1188" dy="619" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="786" dy="451" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -37,26 +37,17 @@
         <mxCell id="erPLebh20Hk0ubmhgYgv-15" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="Eject" vertex="1">
           <mxGeometry height="30" width="63" x="597" y="310" as="geometry" />
         </mxCell>
-        <mxCell id="erPLebh20Hk0ubmhgYgv-16" edge="1" parent="1" source="erPLebh20Hk0ubmhgYgv-15" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.805;entryY=-0.014;entryDx=0;entryDy=0;entryPerimeter=0;" target="erPLebh20Hk0ubmhgYgv-17" value="">
-          <mxGeometry height="50" relative="1" width="50" as="geometry">
-            <mxPoint x="610" y="450" as="sourcePoint" />
-            <mxPoint x="630" y="420" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
         <mxCell id="erPLebh20Hk0ubmhgYgv-17" parent="1" style="whiteSpace=wrap;html=1;aspect=fixed;" value="" vertex="1">
-          <mxGeometry height="220" width="220" x="450" y="420" as="geometry" />
-        </mxCell>
-        <mxCell id="erPLebh20Hk0ubmhgYgv-18" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Disconnecting" vertex="1">
-          <mxGeometry height="30" width="85" x="515" y="440" as="geometry" />
+          <mxGeometry height="220" width="220" x="80" y="440" as="geometry" />
         </mxCell>
         <mxCell id="erPLebh20Hk0ubmhgYgv-19" parent="1" style="shadow=0;dashed=0;html=1;strokeColor=none;fillColor=#EF8F21;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;align=center;outlineConnect=0;shape=mxgraph.veeam.eject;" value="" vertex="1">
-          <mxGeometry height="68" width="61.5" x="529.25" y="472" as="geometry" />
+          <mxGeometry height="68" width="61.5" x="159.25" y="492" as="geometry" />
         </mxCell>
         <mxCell id="erPLebh20Hk0ubmhgYgv-20" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="your DOK is safe you can take out your DOK" vertex="1">
-          <mxGeometry height="30" width="117.5" x="498.75" y="570" as="geometry" />
+          <mxGeometry height="30" width="117.5" x="128.75" y="590" as="geometry" />
         </mxCell>
-        <mxCell id="erPLebh20Hk0ubmhgYgv-22" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Ejecting" vertex="1">
-          <mxGeometry height="30" width="60" x="455" y="390" as="geometry" />
+        <mxCell id="erPLebh20Hk0ubmhgYgv-22" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="סיום" vertex="1">
+          <mxGeometry height="30" width="60" x="150" y="410" as="geometry" />
         </mxCell>
         <mxCell id="erPLebh20Hk0ubmhgYgv-23" parent="1" style="whiteSpace=wrap;html=1;shape=mxgraph.basic.document" value="" vertex="1">
           <mxGeometry height="50" width="38.75" x="490.5" y="160" as="geometry" />
@@ -90,6 +81,33 @@
         </mxCell>
         <mxCell id="erPLebh20Hk0ubmhgYgv-35" parent="1" style="whiteSpace=wrap;html=1;shape=mxgraph.basic.document" value="" vertex="1">
           <mxGeometry height="50" width="38.75" x="530.63" y="260" as="geometry" />
+        </mxCell>
+        <mxCell id="c14ox_BEV_U0V_rX2yxk-1" parent="1" style="whiteSpace=wrap;html=1;aspect=fixed;" value="" vertex="1">
+          <mxGeometry height="220" width="220" x="440" y="440" as="geometry" />
+        </mxCell>
+        <mxCell id="c14ox_BEV_U0V_rX2yxk-2" parent="1" style="verticalLabelPosition=bottom;shadow=0;dashed=0;align=center;html=1;verticalAlign=top;strokeWidth=1;shape=mxgraph.mockup.misc.loading_circle_1;pointerEvents=1" value="" vertex="1">
+          <mxGeometry height="90" width="90" x="507" y="505" as="geometry" />
+        </mxCell>
+        <mxCell id="c14ox_BEV_U0V_rX2yxk-4" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Disconnecting" vertex="1">
+          <mxGeometry height="30" width="80" x="510" y="475" as="geometry" />
+        </mxCell>
+        <mxCell id="c14ox_BEV_U0V_rX2yxk-5" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="you can take it out in a minute" vertex="1">
+          <mxGeometry height="30" width="120" x="490" y="610" as="geometry" />
+        </mxCell>
+        <mxCell id="c14ox_BEV_U0V_rX2yxk-6" edge="1" parent="1" source="erPLebh20Hk0ubmhgYgv-12" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="c14ox_BEV_U0V_rX2yxk-1" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="510" y="390" as="sourcePoint" />
+            <mxPoint x="650" y="390" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="c14ox_BEV_U0V_rX2yxk-7" edge="1" parent="1" source="c14ox_BEV_U0V_rX2yxk-1" style="endArrow=classic;html=1;rounded=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" target="erPLebh20Hk0ubmhgYgv-17" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="400" y="610" as="sourcePoint" />
+            <mxPoint x="530" y="550" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="c14ox_BEV_U0V_rX2yxk-8" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="ejecting" vertex="1">
+          <mxGeometry height="30" width="60" x="440" y="410" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
