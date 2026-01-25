@@ -3,9 +3,6 @@ import threading
 import sys
 import queue
 import time
-import os
-
-import client_protocol
 from shared.asymmetric_cypher import AsymmetricCipher
 from shared.symmetric_cypher import SymmetricCipher
 
@@ -21,6 +18,7 @@ class ClientCommunication:
         self.cipher = None
 
         threading.Thread(target=self._mainLoop).start()
+
 
     def _mainLoop(self):
 
@@ -86,43 +84,6 @@ class ClientCommunication:
             except Exception as e:
                 print(f"error in sending - {e}")
                 self._client_close()
-
-
-
-    def send_file(self, file_name, path, file_len, user_name):
-        """
-        sending the Details and calling the _send_file
-        """
-        file_path = os.path.join(path, file_name)
-        file_details_enc = self.cipher.encrypt(client_protocol.pack_back_up("03", file_name, path, file_len, user_name).encode())
-        self.send_msg(len(file_details_enc))
-        self.send_msg(file_details_enc)
-
-        self._send_file(file_path)
-
-    def _send_file(self, file_path):
-        """
-        sending the file itself
-        """
-        try:
-            with open(file_path, 'rb') as f:
-                while True:
-                    chunk = f.read(1024)
-                    if not chunk:
-                        break
-                    if self.cipher:
-                        chunk = self.cipher.encrypt(chunk)
-                    try:
-                        self.my_socket.send(chunk)
-                    except Exception as e:
-                        print(f"Connection lost during file transfer: {e}")
-                        break
-
-            print(f"Finished streaming file.")
-
-        except Exception as e:
-            print(f"Error: {e}")
-            self._client_close()
 
 
 if __name__ == '__main__':
