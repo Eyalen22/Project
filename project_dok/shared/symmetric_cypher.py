@@ -11,14 +11,18 @@ class SymmetricCipher:
         self.key = symmetric_key
         self.iv = iv
 
+    def get_fresh_cipher(self):
+        """יוצרת אובייקט AES רענן שמתחיל מתחילת הזרם - קריטי לסנכרון קבצים"""
+        return AES.new(self.key, self.MODE, iv=self.iv)
+
     def encrypt(self, data: bytes) -> bytes:
-        """encrypt - msg"""
-        cipher = AES.new(self.key, self.MODE, iv=self.iv)
+        """הצפנה רגילה להודעות קצרות"""
+        cipher = self.get_fresh_cipher()
         return cipher.encrypt(data)
 
     def decrypt(self, data: bytes) -> bytes:
-        """decrypt - msg"""
-        cipher = AES.new(self.key, self.MODE, iv=self.iv)
+        """פענוח רגיל להודעות קצרות"""
+        cipher = self.get_fresh_cipher()
         return cipher.decrypt(data)
 
     @staticmethod

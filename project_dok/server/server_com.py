@@ -21,9 +21,13 @@ class ServerCommunication:
         self.server_socket.bind(('0.0.0.0', self.port))
         self.server_socket.listen(5)
         while True:
-            rlist, wlist, xlist = select.select([self.server_socket] + list(self.open_client.keys()), list(self.open_client.keys()), [], 0.1)
-            for current_client in rlist:
+            potential_readers = [self.server_socket]
+            for sock, info in self.open_client.items():
+                if not info[2]:
+                    potential_readers.append(sock)
 
+            rlist, wlist, xlist = select.select(potential_readers, list(self.open_client.keys()), [], 0.1)
+            for current_client in rlist:
                 if current_client is self.server_socket:
                     (client_soc, addr) = self.server_socket.accept()
                     valid_ip = addr[0]
@@ -48,6 +52,7 @@ class ServerCommunication:
                             opcode = parts[0]
                             user_id = self.open_client[current_client][0]
                             if opcode == "03":
+                                self.open_client[current_client][2] = True
                                 threading.Thread(target=self._recv_file, args=(current_client, parts)).start()
                             else:
                                 self.recvQ.put((user_id, msg))
@@ -70,41 +75,55 @@ class ServerCommunication:
             print(f"Server Error during exchange - {e}")
         else:
             symmetric_key = self.asym_cipher.decrypt(encrypted_key)
-            self.open_client[client_soc] = [client_ip, SymmetricCipher(symmetric_key, iv)]
+            self.open_client[client_soc] = [client_ip, SymmetricCipher(symmetric_key, iv), False]
+            print(f"Server: Secure channel established with {client_ip}")
 
-            print(f"Server: Established secure channel with {client_ip} - {symmetric_key}")
+    def _recv_all(self, soc, size):
+        """ קורא בדיוק את כמות הבתים שהתבקשה מהסוקט """
+        data = b""
+        while len(data) < size:
+            try:
+                packet = soc.recv(size - len(data))
+                if not packet:
+                    return None
+                data += packet
+            except Exception as e:
+                print(f"Error in recv_all: {e}")
+                return None
+        return data
 
     def _recv_file(self, client_soc, details):
-        """
-        client_soc: הסוקט של הלקוח הנוכחי
-        details: [opcode, file_name, original_path, file_len, user_name]
-        """
         try:
-            cipher = self.open_client[client_soc][1]
+            user_id, cipher_manager, _ = self.open_client[client_soc]
+            file_name, file_size, user_name = details[1], int(details[3]), details[4]
 
-            file_name = details[1]
-            file_size = int(details[3])
-            user_name = details[4]
-            user_temp_path = os.path.join("temp_folder", user_name)
-            if not os.path.exists(user_temp_path):
-                os.makedirs(user_temp_path)
-            full_path = os.path.join(user_temp_path, file_name)
-            print(f"Server receiving file from {user_name}...")
+            # יצירת אובייקט AES רציף לכל זרם הקובץ
+            file_cipher = cipher_manager.get_fresh_cipher()
+
+            full_path = os.path.join("temp_folder", user_name, file_name)
+            os.makedirs(os.path.dirname(full_path), exist_ok=True)
+
+            print(f"[*] Downloading {file_name}...")
             remaining_data = file_size
             with open(full_path, 'wb') as f:
                 while remaining_data > 0:
-                    chunk_size = min(1024, remaining_data)
-                    chunk = client_soc.recv(chunk_size)
-                    if not chunk:
-                        break
-                    decrypted_chunk = cipher.decrypt(chunk)
-                    f.write(decrypted_chunk)
-                    remaining_data -= len(decrypted_chunk)
-            print(f"File saved successfully at: {full_path}")
-            logic_msg = f"03@#2{file_name}@#2{details[2]}@#2{user_name}@#2{full_path}"
-            self.recvQ.put((self.open_client[client_soc][0], logic_msg))
-        except Exception as e:
-            print(f"Error in server _recv_file: {e}")
+                    chunk = self._recv_all(client_soc, min(1024, remaining_data))
+                    if not chunk: break
+
+                    # פענוח רציף ללא איפוס ה-IV
+                    decrypted = file_cipher.decrypt(chunk)
+                    f.write(decrypted)
+                    remaining_data -= len(chunk)
+
+            if remaining_data == 0:
+                print(f"[V] Download complete: {full_path}")
+                logic_msg = f"03@#2{file_name}@#2{details[2]}@#2{user_name}@#2{full_path}"
+                self.recvQ.put((user_id, logic_msg))
+
+        finally:
+            # שחרור הלקוח בחזרה ל-MainLoop (קורה גם אם הייתה שגיאה)
+            if client_soc in self.open_client:
+                self.open_client[client_soc][2] = False
 
     def _close_client(self, client_soc):
         """
@@ -159,6 +178,7 @@ class ServerCommunication:
                 print(f"error in sending - {e}")
                 self._close_client(soc)
 
+
     def check_ip_values(self, ip:str) -> str:
         """
 
@@ -180,6 +200,8 @@ class ServerCommunication:
             i += 1
 
         return ip
+
+
 
 
 

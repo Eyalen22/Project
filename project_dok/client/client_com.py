@@ -94,33 +94,22 @@ class ClientCommunication:
         file_path = os.path.join(path, file_name)
         file_size = os.path.getsize(file_path)
         packed_msg = client_protocol.pack_back_up("03", file_name, path, file_size, user_name)
-        file_details_enc = self.cipher.encrypt(packed_msg.encode())
-        self.send_msg(int.to_bytes(len(file_details_enc), 4, "big"))
-        self.send_msg(file_details_enc)
-
+        self.send_msg(packed_msg)
         self._send_file(file_path)
 
     def _send_file(self, file_path):
-        """
-        Sends the encrypted file data as a raw stream.
-        """
         try:
+            file_cipher = self.cipher.get_fresh_cipher()
             with open(file_path, 'rb') as f:
                 while True:
                     chunk = f.read(1024)
-                    if not chunk:
-                        break
-                    if self.cipher:
-                        chunk = self.cipher.encrypt(chunk)
-                    try:
-                        self.my_socket.sendall(chunk)
-                    except Exception as e:
-                        print(f"Connection lost during file transfer: {e}")
-                        break
+                    if not chunk: break
+                    encrypted_chunk = file_cipher.encrypt(chunk)
+                    self.my_socket.sendall(encrypted_chunk)
 
             print(f"Finished streaming file: {file_path}")
         except Exception as e:
-            print(f"Error: {e}")
+            print(f"Client error during stream: {e}")
             self._client_close()
 
 
@@ -128,7 +117,7 @@ if __name__ == '__main__':
     myQ = queue.Queue()
     myComm = ClientCommunication("127.0.0.1", 1000, myQ)
     time.sleep(0.3)
-
-    myComm.send_msg("hello barak, "*100 + " - hey man")
+    myComm.send_msg("hello man")
+    myComm.send_file("cat.jpg", "E:\Project\project_dok\client", "noam")
 
 
