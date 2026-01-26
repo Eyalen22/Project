@@ -92,6 +92,8 @@ class ServerCommunication:
                 return None
         return data
 
+    ## make pretty ##
+
     def _recv_file(self, client_soc, details):
         try:
             user_id, cipher_manager, _ = self.open_client[client_soc]
