@@ -2,7 +2,7 @@ import socket
 import threading
 import select
 import queue
-import time
+import os
 from shared.asymmetric_cypher import AsymmetricCipher
 from shared.symmetric_cypher import SymmetricCipher
 
@@ -39,19 +39,22 @@ class ServerCommunication:
                         msg = self.open_client[current_client][1].decrypt(encrypt_msg)
                     except Exception as e:
                         print(f"error in recv- {e}")
-                        self.recvQ.put((self.open_client[current_client][0], "0/"))
-                        self.recvQ.put((self.open_client[current_client][0], "-1/"))
-                        time.sleep(0.1)
+                        self._close_client(current_client)
                         print(f"client disconnected - {e}")
                     else:
                         try:
                             msg = msg.decode('utf-8')
-                            self.recvQ.put((self.open_client[current_client][0], msg))
+                            parts = msg.split("@#2")
+                            opcode = parts[0]
+                            user_id = self.open_client[current_client][0]
+                            if opcode == "03":
+                                threading.Thread(target=self._recv_file, args=(current_client, parts)).start()
+                            else:
+                                self.recvQ.put((user_id, msg))
                         except Exception as e:
                             print(f"error in decodeing- {e}")
 
 
-    ## good don't touch that eyal ##
     def _change_key(self, client_soc, client_ip):
         """
         get's the same key as the client
@@ -70,8 +73,38 @@ class ServerCommunication:
             self.open_client[client_soc] = [client_ip, SymmetricCipher(symmetric_key, iv)]
 
             print(f"Server: Established secure channel with {client_ip} - {symmetric_key}")
-    ## good don't touch that eyal ##
 
+    def _recv_file(self, client_soc, details):
+        """
+        client_soc: הסוקט של הלקוח הנוכחי
+        details: [opcode, file_name, original_path, file_len, user_name]
+        """
+        try:
+            cipher = self.open_client[client_soc][1]
+
+            file_name = details[1]
+            file_size = int(details[3])
+            user_name = details[4]
+            user_temp_path = os.path.join("temp_folder", user_name)
+            if not os.path.exists(user_temp_path):
+                os.makedirs(user_temp_path)
+            full_path = os.path.join(user_temp_path, file_name)
+            print(f"Server receiving file from {user_name}...")
+            remaining_data = file_size
+            with open(full_path, 'wb') as f:
+                while remaining_data > 0:
+                    chunk_size = min(1024, remaining_data)
+                    chunk = client_soc.recv(chunk_size)
+                    if not chunk:
+                        break
+                    decrypted_chunk = cipher.decrypt(chunk)
+                    f.write(decrypted_chunk)
+                    remaining_data -= len(decrypted_chunk)
+            print(f"File saved successfully at: {full_path}")
+            logic_msg = f"03@#2{file_name}@#2{details[2]}@#2{user_name}@#2{full_path}"
+            self.recvQ.put((self.open_client[client_soc][0], logic_msg))
+        except Exception as e:
+            print(f"Error in server _recv_file: {e}")
 
     def _close_client(self, client_soc):
         """

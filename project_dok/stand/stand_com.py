@@ -3,6 +3,7 @@ import threading
 import sys
 import queue
 import time
+import os
 from shared.asymmetric_cypher import AsymmetricCipher
 from shared.symmetric_cypher import SymmetricCipher
 
@@ -19,9 +20,7 @@ class ClientCommunication:
 
         threading.Thread(target=self._mainLoop).start()
 
-
     def _mainLoop(self):
-
         try:
             self.my_socket.connect((self.server_ip, self.port))
         except Exception as e:
@@ -29,6 +28,55 @@ class ClientCommunication:
             sys.exit("server not currently available - try later")
 
         self._change_key()
+
+        while True:
+            try:
+                long = int.from_bytes(self.my_socket.recv(10), "big")
+                msg = self.my_socket.recv(long)
+                new_msg = self.cipher.decrypt(msg).decode()
+                parts = new_msg.split("@#2")
+                opcode = parts[0]
+                if opcode == "04":
+                    self._recv_file(parts)
+                else:
+                    self.recvQ.put(new_msg)
+
+            except Exception as e:
+                print(f"error in receiving - {e}")
+                self._client_close()
+                break
+
+    def _recv_file(self, details):
+        """
+        details: [opcode, file_name, file_path, file_len]
+        """
+        file_name = details[1]
+        try:
+            file_size = int(details[3])
+        except:
+            print("Error: Invalid file size")
+            return
+        try:
+            if not os.path.exists("downloads"):
+                os.makedirs("downloads")
+            full_path = os.path.join("downloads", file_name)
+            print(f"Receiving file: {file_name}...")
+            remaining_data = file_size
+            with open(full_path, 'wb') as f:
+                while remaining_data > 0:
+                    chunk_size = min(1024, remaining_data)
+                    chunk = self.my_socket.recv(chunk_size)
+                    if not chunk:
+                        break
+                    if self.cipher:
+                        chunk = self.cipher.decrypt(chunk)
+                    f.write(chunk)
+                    remaining_data -= len(chunk)
+            msg_for_queue = "@#2".join(details) + f"@#2{full_path}"
+            self.recvQ.put(msg_for_queue)
+            print(f"File saved and path sent to logic: {full_path}")
+        except Exception as e:
+            print(f"Error in _recv_file: {e}")
 
 
     def _change_key(self):
@@ -84,7 +132,6 @@ class ClientCommunication:
             except Exception as e:
                 print(f"error in sending - {e}")
                 self._client_close()
-
 
 if __name__ == '__main__':
     myQ = queue.Queue()

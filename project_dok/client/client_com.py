@@ -87,22 +87,22 @@ class ClientCommunication:
                 print(f"error in sending - {e}")
                 self._client_close()
 
-
-
-    def send_file(self, file_name, path, file_len, user_name):
+    def send_file(self, file_name, path, user_name):
         """
-        sending the Details and calling the _send_file
+        send details to the server + call _recv_file
         """
         file_path = os.path.join(path, file_name)
-        file_details_enc = self.cipher.encrypt(client_protocol.pack_back_up("03", file_name, path, file_len, user_name).encode())
-        self.send_msg(len(file_details_enc))
+        file_size = os.path.getsize(file_path)
+        packed_msg = client_protocol.pack_back_up("03", file_name, path, file_size, user_name)
+        file_details_enc = self.cipher.encrypt(packed_msg.encode())
+        self.send_msg(int.to_bytes(len(file_details_enc), 4, "big"))
         self.send_msg(file_details_enc)
 
         self._send_file(file_path)
 
     def _send_file(self, file_path):
         """
-        sending the file itself
+        Sends the encrypted file data as a raw stream.
         """
         try:
             with open(file_path, 'rb') as f:
@@ -113,13 +113,12 @@ class ClientCommunication:
                     if self.cipher:
                         chunk = self.cipher.encrypt(chunk)
                     try:
-                        self.my_socket.send(chunk)
+                        self.my_socket.sendall(chunk)
                     except Exception as e:
                         print(f"Connection lost during file transfer: {e}")
                         break
 
-            print(f"Finished streaming file.")
-
+            print(f"Finished streaming file: {file_path}")
         except Exception as e:
             print(f"Error: {e}")
             self._client_close()

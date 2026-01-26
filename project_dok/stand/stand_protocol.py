@@ -20,8 +20,8 @@ def unpack_restore(new_msg):
     file_name = new_msg[0]
     file_path = new_msg[1]
     file_len = new_msg[2]
-    file = new_msg[4]
-    return file_name, file_path, file_len, file
+    file_place = new_msg[3]
+    return file_name, file_path, file_len, file_place
 
 ## pack ##
 def pack_sigh_in(opcode, user_name, password, mail):

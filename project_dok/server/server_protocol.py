@@ -38,10 +38,9 @@ def unpack_update(new_msg):
 def unpack_back_up(new_msg):
     file_name = new_msg[0]
     file_path = new_msg[1]
-    file_len = new_msg[2]
-    user_name = new_msg[3]
-    file = new_msg[4]
-    return file_name, file_path, file_len, user_name, file
+    user_name = new_msg[2]
+    full_path = new_msg[3]
+    return file_name, file_path, user_name, full_path
 
 def unpack_restore(new_msg):
     user_name = new_msg[0]
@@ -57,5 +56,5 @@ def unpack_add_dok(new_msg):
 def pack_status(opcode, status):
     return f"{opcode}@#2{status}"
 
-def pack_restore(opcode, file_name, file_path, file_len, file):
-    return f"{opcode}@#2{file_name}@#2{file_path}@#2{file_len}@#2{file}"
+def pack_restore(opcode, file_name, file_path, file_len):
+    return f"{opcode}@#2{file_name}@#2{file_path}@#2{file_len}"
