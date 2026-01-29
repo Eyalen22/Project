@@ -15,7 +15,6 @@ class ClientCommunication:
         self.server_ip = server_ip
         self.port = port
         self.recvQ = recvQ
-        self.iv = SymmetricCipher.random_iv()
         self.cipher = None
 
         threading.Thread(target=self._mainLoop).start()

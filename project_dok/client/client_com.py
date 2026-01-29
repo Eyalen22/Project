@@ -4,7 +4,6 @@ import sys
 import queue
 import time
 import os
-
 import client_protocol
 from shared.asymmetric_cypher import AsymmetricCipher
 from shared.symmetric_cypher import SymmetricCipher
@@ -17,7 +16,6 @@ class ClientCommunication:
         self.server_ip = server_ip
         self.port = port
         self.recvQ = recvQ
-        self.iv = SymmetricCipher.random_iv()
         self.cipher = None
 
         threading.Thread(target=self._mainLoop).start()
@@ -46,19 +44,17 @@ class ClientCommunication:
             self.my_socket.close()
         if server_pub_key:
             new_key = SymmetricCipher.random_symmetric_key()
-            new_iv = SymmetricCipher.random_iv()
             encrypted_key = AsymmetricCipher.encrypt(server_pub_key, new_key)
             try:
                 self.my_socket.send(str(len(encrypted_key)).zfill(4).encode())
                 self.my_socket.send(encrypted_key)
-                self.my_socket.send(new_iv)
             except Exception as e:
                 print(f"Error during key exchange: {e}")
                 self.my_socket.close()
 
-            self.cipher = SymmetricCipher(new_key, new_iv)
-            self.iv = new_iv
+            self.cipher = SymmetricCipher(new_key)
             print(f"Key exchange successful. Encryption is active. - {new_key}")
+            print(self.cipher)
         else:
             print("error")
 
@@ -80,6 +76,7 @@ class ClientCommunication:
         if self.cipher:
             new_msg = self.cipher.encrypt(msg.encode('utf-8'))
             len_msg = int.to_bytes(len(new_msg), 4, "big")
+            print(len_msg , new_msg)
             try:
                 self.my_socket.send(len_msg)
                 self.my_socket.send(new_msg)
@@ -92,25 +89,17 @@ class ClientCommunication:
         send details to the server + call _recv_file
         """
         file_path = os.path.join(path, file_name)
-        file_size = os.path.getsize(file_path)
-        packed_msg = client_protocol.pack_back_up("03", file_name, path, file_size, user_name)
-        self.send_msg(packed_msg)
-        self._send_file(file_path)
-
-    def _send_file(self, file_path):
-        try:
-            file_cipher = self.cipher.get_fresh_cipher()
+        if os.path.exists(file_path):
             with open(file_path, 'rb') as f:
-                while True:
-                    chunk = f.read(1024)
-                    if not chunk: break
-                    encrypted_chunk = file_cipher.encrypt(chunk)
-                    self.my_socket.sendall(encrypted_chunk)
-
-            print(f"Finished streaming file: {file_path}")
-        except Exception as e:
-            print(f"Client error during stream: {e}")
-            self._client_close()
+                data = f.read()
+            file_size = len(data)
+            packed_msg = client_protocol.pack_back_up("03", file_name, path, file_size, user_name)
+            self.send_msg(packed_msg)
+            try:
+                self.my_socket.sendall(self.cipher.encrypt(data))
+            except Exception as e:
+                print(f"Client error during stream: {e}")
+                self._client_close()
 
 
 if __name__ == '__main__':
@@ -118,6 +107,7 @@ if __name__ == '__main__':
     myComm = ClientCommunication("127.0.0.1", 1000, myQ)
     time.sleep(0.3)
     myComm.send_msg("hello man")
-    myComm.send_file("cat.jpg", "E:\Project\project_dok\client", "noam")
+    myComm.send_file("ido.jpg", "E:\Project", "noam")
+    myComm.send_file("tevel.jpg", "E:\\", "noam")
 
 
