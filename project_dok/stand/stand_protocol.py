@@ -1,27 +1,11 @@
 ## unpack ##
 def unpack(msg):
-    new_msg = msg.spilt("@#2")[0]
+    new_msg = msg.split("@#2")
     opcode = new_msg[0]
     new_msg = new_msg[1:]
-    unpacked = None
+    return opcode, new_msg
 
-    if opcode == ["00", "01", "02", "06"]:
-         unpacked = unpack_status(new_msg)
-    elif opcode == "04":
-         unpacked = unpack_restore(new_msg)
 
-    return opcode, unpacked
-
-def unpack_status(new_msg):
-    status = new_msg[0]
-    return status
-
-def unpack_restore(new_msg):
-    file_name = new_msg[0]
-    file_path = new_msg[1]
-    file_len = new_msg[2]
-    file_place = new_msg[3]
-    return file_name, file_path, file_len, file_place
 
 ## pack ##
 def pack_sigh_in(opcode, user_name, password, mail):

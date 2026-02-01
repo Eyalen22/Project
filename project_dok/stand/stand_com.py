@@ -4,6 +4,8 @@ import sys
 import queue
 import time
 import os
+from pathlib import Path
+import stand_protocol
 from shared.asymmetric_cypher import AsymmetricCipher
 from shared.symmetric_cypher import SymmetricCipher
 
@@ -31,52 +33,55 @@ class ClientCommunication:
         while True:
             try:
                 long = int.from_bytes(self.my_socket.recv(10), "big")
-                msg = self.my_socket.recv(long)
-                new_msg = self.cipher.decrypt(msg).decode()
-                parts = new_msg.split("@#2")
-                opcode = parts[0]
-                if opcode == "04":
-                    self._recv_file(parts)
-                else:
-                    self.recvQ.put(new_msg)
-
+                encrypt_msg = self.my_socket.recv(long)
             except Exception as e:
                 print(f"error in receiving - {e}")
                 self._client_close()
                 break
+            msg = self.cipher.decrypt(encrypt_msg).decode()
+            if not msg[0:2] == "04":
+                self.recvQ.put(msg)
+            else:
+                self._recv_file(msg)
 
-    def _recv_file(self, details):
-        """
-        details: [opcode, file_name, file_path, file_len]
-        """
-        file_name = details[1]
-        try:
-            file_size = int(details[3])
-        except:
-            print("Error: Invalid file size")
-            return
-        try:
-            if not os.path.exists("downloads"):
-                os.makedirs("downloads")
-            full_path = os.path.join("downloads", file_name)
-            print(f"Receiving file: {file_name}...")
-            remaining_data = file_size
-            with open(full_path, 'wb') as f:
-                while remaining_data > 0:
-                    chunk_size = min(1024, remaining_data)
-                    chunk = self.my_socket.recv(chunk_size)
-                    if not chunk:
+
+    def _recv_file(self, msg):
+        opcode, parts = stand_protocol.unpack(msg)
+        if not parts[2].isdigit():
+            self._client_close()
+        else:
+            file_size = int(parts[2])
+            data = bytearray()
+            while len(data) < file_size:
+                toRead = file_size - len(data)
+                if toRead > 1024:
+                    try:
+                        data.extend(self.my_socket.recv(1024))
+                    except Exception as e:
                         break
-                    if self.cipher:
-                        chunk = self.cipher.decrypt(chunk)
-                    f.write(chunk)
-                    remaining_data -= len(chunk)
-            msg_for_queue = "@#2".join(details) + f"@#2{full_path}"
-            self.recvQ.put(msg_for_queue)
-            print(f"File saved and path sent to logic: {full_path}")
-        except Exception as e:
-            print(f"Error in _recv_file: {e}")
+                else:
+                    try:
+                        data.extend(self.my_socket.recv(toRead))
+                    except Exception as e:
+                        break
+                    else:
+                        break
 
+            if not len(data) == file_size:
+                self._client_close()
+
+            else:
+                decrypt_data = self.cipher.decrypt(data)
+                clean_path = parts[1].replace(":", "")
+                downloads_path = str(Path.home() / "Downloads")
+
+                full_directory = os.path.join(downloads_path, clean_path)
+                full_file_path = os.path.join(full_directory, parts[0])
+                os.makedirs(full_directory, exist_ok=True)
+
+                with open(full_file_path, "wb") as f:
+                    f.write(decrypt_data)
+                print("New file saved to:", full_file_path)
 
     def _change_key(self):
         """
@@ -91,19 +96,17 @@ class ClientCommunication:
             self.my_socket.close()
         if server_pub_key:
             new_key = SymmetricCipher.random_symmetric_key()
-            new_iv = SymmetricCipher.random_iv()
             encrypted_key = AsymmetricCipher.encrypt(server_pub_key, new_key)
             try:
                 self.my_socket.send(str(len(encrypted_key)).zfill(4).encode())
                 self.my_socket.send(encrypted_key)
-                self.my_socket.send(new_iv)
             except Exception as e:
                 print(f"Error during key exchange: {e}")
                 self.my_socket.close()
 
-            self.cipher = SymmetricCipher(new_key, new_iv)
-            self.iv = new_iv
+            self.cipher = SymmetricCipher(new_key)
             print(f"Key exchange successful. Encryption is active. - {new_key}")
+            print(self.cipher)
         else:
             print("error")
 
@@ -133,10 +136,11 @@ class ClientCommunication:
                 self._client_close()
 
 if __name__ == '__main__':
-    myQ = queue.Queue()
-    myComm = ClientCommunication("127.0.0.1", 1000, myQ)
-    time.sleep(0.3)
-
-    myComm.send_msg("hello barak, "*100 + " - hey man")
+    if __name__ == '__main__':
+        myQ = queue.Queue()
+        myComm = ClientCommunication("127.0.0.1", 1000, myQ)
+        time.sleep(0.3)
+        while True:
+            pass
 
 

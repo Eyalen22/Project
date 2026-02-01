@@ -107,39 +107,26 @@ class ServerCommunication:
                     f.write(decrypt_data)
                 print("new file in: ", full_file_path)
 
-    def _close_client(self, client_soc):
+    def send_file(self, file_name, path, client_ip):
         """
-        close the client
-        :param client_socket:socket
-        :return:None
-        """
-        if client_soc in self.open_clients.keys():
-            print(f"{self.open_clients[client_soc]} - disconnect")
-            del self.open_clients[client_soc]
-            client_soc.close()
-
-    def _get_socket_by_ip(self, client_ip):
-        """
-        giving the correct soc by the ip
-        :param client_ip: str
-        :return: return socket
-        """
-        soc = None
-        for socket in self.open_clients:
-            if client_ip == self.open_clients[socket][0]:
-                soc = socket
-                break
-
-        return soc
-
-    def close_client(self, client_ip):
-        """
-        closing the client
-        :param client_ip: str
-        :return: None
+        send details to the server + call _recv_file
         """
         soc = self._get_socket_by_ip(client_ip)
-        self._close_client(soc)
+        file_path = os.path.join(path, file_name)
+        if soc:
+            key = self.open_clients[soc][1]
+            with open(file_path, 'rb') as f:
+                data = f.read()
+            file_size = len(data)
+            packed_msg = server_protocol.pack_restore("04", file_name, path, file_size)
+            self.send_msg(client_ip, packed_msg)
+            try:
+                soc.sendall(key.encrypt(data))
+            except Exception as e:
+                print(f"Client error during stream: {e}")
+                self.close_client(client_ip)
+            else:
+                print("the file was sent successfully")
 
     def send_msg(self, client_ip, msg):
         """
@@ -159,6 +146,27 @@ class ServerCommunication:
             except Exception as e:
                 print(f"error in sending - {e}")
                 self._close_client(soc)
+
+    def _close_client(self, client_soc):
+        """
+        close the client
+        :param client_socket:socket
+        :return:None
+        """
+        if client_soc in self.open_clients.keys():
+            print(f"{self.open_clients[client_soc]} - disconnect")
+            del self.open_clients[client_soc]
+            client_soc.close()
+
+
+    def close_client(self, client_ip):
+        """
+        closing the client
+        :param client_ip: str
+        :return: None
+        """
+        soc = self._get_socket_by_ip(client_ip)
+        self._close_client(soc)
 
 
     def check_ip_values(self, ip:str) -> str:
@@ -184,19 +192,28 @@ class ServerCommunication:
         return ip
 
 
+    def _get_socket_by_ip(self, client_ip):
+        """
+        giving the correct soc by the ip
+        :param client_ip: str
+        :return: return socket
+        """
+        soc = None
+        for socket in self.open_clients:
+            if client_ip == self.open_clients[socket][0]:
+                soc = socket
+                break
 
+        return soc
 
 
 if __name__ == '__main__':
     myQ = queue.Queue()
     myComm = ServerCommunication(1000, myQ)
+    time.sleep(1)
+    myComm.send_file("tevel.jpg", "E:\Project\project_dok\server\\noam\E", "127.0.0.1")
 
 
-
-    while True:
-        hello = myQ.get()[1]
-        if hello:
-            print(f"{hello}")
 
 
 
