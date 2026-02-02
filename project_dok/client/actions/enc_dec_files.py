@@ -2,14 +2,13 @@ from shared import symmetric_cypher
 import hashlib
 
 
-
-
 def create_key(user_name, password):
     new_password = password[::-1]
     print(new_password)
-    get_key = f"{user_name[2:]}{new_password}"
+    get_key = f"{user_name[2:]}{new_password}ido_vz"
     key_full_hash = hashlib.sha256(get_key.encode()).digest()
     key = key_full_hash[:32]
+    print(key)
 
     return key
 

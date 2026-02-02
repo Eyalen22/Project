@@ -1,5 +1,5 @@
 import client_com
-import client_protocol
+from actions import client_protocol
 import queue
 import threading
 

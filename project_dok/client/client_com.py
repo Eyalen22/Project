@@ -4,7 +4,7 @@ import sys
 import queue
 import time
 import os
-import client_protocol
+from actions import client_protocol
 from shared.asymmetric_cypher import AsymmetricCipher
 from shared.symmetric_cypher import SymmetricCipher
 
