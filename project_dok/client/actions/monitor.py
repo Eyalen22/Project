@@ -22,7 +22,6 @@ class FileOpenerMonitor:
     def open_and_monitor(self):
         try:
             ext = self.file_name.lower()
-
             # הגדרת קבוצות קבצים
             image_exts = ('.jpg', '.jpeg', '.png', '.bmp', '.gif', '.webp')
             code_exts = ('.py', '.java', '.c', '.cpp', '.cs', '.js', '.html', '.css', '.txt', '.json')
@@ -68,9 +67,11 @@ class FileOpenerMonitor:
 
 if __name__ == "__main__":
     # בדוק כאן: main.py, test.txt, image.png וכו'
-    my_file = r"/actions/monitor.py"
+    my_file = r"E:\Project\project_dok\Setting.py"
     if os.path.exists(my_file):
         monitor = FileOpenerMonitor(my_file)
         monitor.start_thread()
+        monitor2 = FileOpenerMonitor(r"E:\Project\project_dok\server\noam\E\tevel.jpg")
+        monitor2.start_thread()
         while True:
             time.sleep(1)
