@@ -73,5 +73,7 @@ if __name__ == "__main__":
         monitor.start_thread()
         monitor2 = FileOpenerMonitor(r"E:\Project\project_dok\server\noam\E\tevel.jpg")
         monitor2.start_thread()
+        monitor3 = FileOpenerMonitor(r"E:\Project\project_dok\server\noam\E\tevel.jpg")
+        monitor3.start_thread()
         while True:
             time.sleep(1)
