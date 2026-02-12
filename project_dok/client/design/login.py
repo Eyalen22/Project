@@ -56,10 +56,8 @@ class LoginFrame(wx.Frame):
         אם האפליקציה רצה מ-PyCharm, הוא מחפש בתיקייה של הסקריפט.
         """
         if getattr(sys, 'frozen', False):
-            # נתיב פנימי של PyInstaller
             base_path = sys._MEIPASS
         else:
-            # נתיב עבודה רגיל
             base_path = os.path.dirname(os.path.abspath(__file__))
 
         return os.path.join(base_path, ".auth_vault")
@@ -89,12 +87,11 @@ class LoginFrame(wx.Frame):
                         self.success_callback(u_raw, drive_path)
                         self.Destroy()
                     else:
-                        wx.MessageBox("שם משתמש או סיסמה לא נכונים.", "Auth Failed")
+                        wx.MessageBox("username or password are incorrect: ", "Auth Failed")
         except Exception as e:
-            wx.MessageBox(f"שגיאה בקריאה: {str(e)}")
+            wx.MessageBox(f"error in reading - {str(e)}")
 
 
-# חלק זה מיועד רק לבדיקה ידנית של הקובץ אם מריצים אותו ישירות
 if __name__ == '__main__':
     app = wx.App()
     LoginFrame(success_callback=lambda u, p: print(f"Logged in: {u} on {p}"))

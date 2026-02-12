@@ -203,7 +203,6 @@ class ServerCommunication:
             if client_ip == self.open_clients[socket][0]:
                 soc = socket
                 break
-
         return soc
 
 
