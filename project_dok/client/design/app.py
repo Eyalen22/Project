@@ -10,7 +10,7 @@ class App:
 
     def start_app(self):
         app = wx.App()
-        LoginFrame(success_callback=lambda user: DOKExplorerFrame(user))
+        LoginFrame(success_callback=lambda user, path: DOKExplorerFrame(user, path))
         app.MainLoop()
 
 if __name__ == '__main__':

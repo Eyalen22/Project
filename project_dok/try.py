@@ -3,8 +3,7 @@ import os
 
 
 def setup_dok():
-    # 1. הגדרת הפרטים
-    username = "ido_test"
+    username = "noam"
     password = "eyal_en22"
 
     # 2. יצירת ה-Hash
@@ -18,8 +17,6 @@ def setup_dok():
     try:
         with open(file_path, "w") as f:
             f.write(f"{u_hash}\n{p_hash}")
-
-        # הפיכת הקובץ לנסתר (בווינדוס)
         if os.name == 'nt':
             os.system(f'attrib +h {file_path}')
 
