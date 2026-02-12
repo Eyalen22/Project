@@ -209,7 +209,7 @@ class ServerCommunication:
 
 if __name__ == '__main__':
     myQ = queue.Queue()
-    myComm = ServerCommunication(1000, myQ)
+    myComm = ServerCommunication(2222, myQ)
     time.sleep(1)
     myComm.send_file("tevel.jpg", "E:\Project\project_dok\server\\noam\E", "127.0.0.1")
 

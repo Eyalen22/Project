@@ -1,12 +1,14 @@
 import os
+import queue
 import subprocess
 import threading
 import time
 
 
 class FileOpenerMonitor:
-    def __init__(self, file_path):
+    def __init__(self, file_path, changeQ):
         self.file_path = os.path.abspath(file_path)
+        self.changeQ = changeQ
         self.file_name = os.path.basename(file_path)
         self.initial_mtime = os.path.getmtime(self.file_path)
         t = threading.Thread(target=self.open_and_monitor, daemon=True)
@@ -49,26 +51,28 @@ class FileOpenerMonitor:
         self.check_if_changed()
 
     def check_if_changed(self):
+        flag = True
         time.sleep(0.5)
         current_mtime = os.path.getmtime(self.file_path)
         print(f"\n[!] הקובץ {self.file_name} נסגר.")
 
         if current_mtime > self.initial_mtime:
-            print(f"[V] בוצע שינוי בקובץ!")
             self.initial_mtime = current_mtime
         else:
-            print(f"[-] לא בוצע שינוי.")
+            flag = False
+        self.changeQ.put(flag)
+
 
 
 
 
 
 if __name__ == "__main__":
-    # בדוק כאן: main.py, test.txt, image.png וכו'
-    my_file = r"E:\Project\project_dok\Setting.py"
-    if os.path.exists(my_file):
-        monitor = FileOpenerMonitor(my_file)
-        monitor2 = FileOpenerMonitor(r"E:\Project\project_dok\server\noam\E\tevel.jpg")
-        monitor3 = FileOpenerMonitor(r"E:\Project\project_dok\server\noam\E\tevel.jpg")
+    myQ = queue.Queue()
+    if os.path.exists("D:\Screenshot 2025-12-18 180657.png"):
+        monitor = FileOpenerMonitor("D:\Screenshot 2025-12-18 180657.png", myQ)
+        monitor2 = FileOpenerMonitor("D:\Screenshot 2025-12-18 180657.png", myQ)
+        monitor3 = FileOpenerMonitor("D:\Screenshot 2025-12-18 180657.png", myQ)
         while True:
-            time.sleep(1)
+            if not myQ.empty():
+                print(myQ.get())

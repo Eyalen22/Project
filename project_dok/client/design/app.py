@@ -1,13 +1,21 @@
 import wx
+import client_logic
 from login import LoginFrame
 from dok_explorer import DOKExplorerFrame
 
 
-def start_app():
-    app = wx.App()
-    # ה-Callback פותח את הסייר רק אחרי התחברות מוצלחת
-    LoginFrame(success_callback=lambda user: DOKExplorerFrame(user))
-    app.MainLoop()
+class App:
+    def __init__(self):
+        self.client_log = client_logic.clientLogic()
 
-if __name__ == "__main__":
-    start_app()
+    def start_app(self):
+        app = wx.App()
+        LoginFrame(success_callback=lambda user: DOKExplorerFrame(user))
+        app.MainLoop()
+
+if __name__ == '__main__':
+    app = App()
+    app.start_app()
+
+
+

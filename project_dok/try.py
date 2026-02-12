@@ -4,8 +4,8 @@ import os
 
 def setup_dok():
     # 1. הגדרת הפרטים
-    username = "eyal"
-    password = "12345"
+    username = "ido_test"
+    password = "eyal_en22"
 
     # 2. יצירת ה-Hash
     u_hash = hashlib.sha256(username.encode()).hexdigest()
