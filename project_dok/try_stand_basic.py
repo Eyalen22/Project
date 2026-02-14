@@ -29,6 +29,8 @@ def get_drive_list():
 
 if __name__ == '__main__':
     dok = ""
+    user_name =""
+    password = ""
     get_drives = get_drive_list()
     print("ready to start add DOK to your computer")
 
@@ -55,17 +57,20 @@ if __name__ == '__main__':
             files = get_files(dok)
             for i in files:
                 cypher_files.encrypt_file(file_path= i, key= key)
+                cypher_files.encrypt_file_name(file_path=i, key=key)
         elif index == "2":
             if user_name in users.keys() and users[user_name] == password:
                 key = cypher_files.create_key(user_name=user_name, password=password)
                 files = get_files(dok)
                 for i in files:
                     cypher_files.decrypt_file(file_path=i, key=key)
+                    cypher_files.decrypt_file_name(file_path=i, key=key)
         elif index == "3":
             if user_name in users.keys() and users[user_name] == password:
                 key = cypher_files.create_key(user_name=user_name, password=password)
                 files = get_files(dok)
                 for i in files:
                     cypher_files.encrypt_file(file_path=i, key=key)
+                    cypher_files.encrypt_file_name(file_path=i, key=key)
 
         index = input("press the number for action:\n1 - put inside your dok the server files\n2 - decrypt your DOK\n3 - encrypt your DOK\n-> ")

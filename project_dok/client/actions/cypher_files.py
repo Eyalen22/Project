@@ -1,3 +1,5 @@
+import base64
+
 from shared import symmetric_cypher
 import hashlib
 import os
@@ -19,11 +21,14 @@ def encrypt_file(file_path, key):
     with open(file_path, 'wb') as f:
         f.write(data)
 
-    # directory = os.path.dirname(file_path)
-    # old_name = os.path.basename(file_path)
-    # encrypted_name = key.encrypt(old_name.encode())
-    # new_path = os.path.join(directory, encrypted_name.decode())
-    # os.rename(file_path, new_path)
+
+def encrypt_file_name(file_path, key):
+    directory = os.path.dirname(file_path)
+    old_name = os.path.basename(file_path)
+    encrypted_bytes = key.encrypt(old_name.encode())
+    safe_name = base64.urlsafe_b64encode(encrypted_bytes).decode()
+    new_path = os.path.join(directory, safe_name)
+    os.rename(file_path, new_path)
 
 
 def decrypt_file(file_path, key):
@@ -34,12 +39,15 @@ def decrypt_file(file_path, key):
     with open(file_path, 'wb') as f:
         f.write(data)
 
-    # directory = os.path.dirname(file_path)
-    # old_name = os.path.basename(file_path)
-    # encrypted_name = key.decrypt(old_name.encode())
-    # new_path = os.path.join(directory, encrypted_name.decode())
-    # os.rename(file_path, new_path)
 
+def decrypt_file_name(file_path, key):
+    directory = os.path.dirname(file_path)
+    encrypted_name = os.path.basename(file_path)
+    encrypted_bytes = base64.urlsafe_b64decode(encrypted_name.encode())
+    decrypted_bytes = key.decrypt(encrypted_bytes)
+    original_name = decrypted_bytes.decode()
+    original_path = os.path.join(directory, original_name)
+    os.rename(file_path, original_path)
 
 
 if __name__ == '__main__':
