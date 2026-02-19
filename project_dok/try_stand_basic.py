@@ -31,6 +31,7 @@ if __name__ == '__main__':
     dok = ""
     user_name =""
     password = ""
+    user = False
     get_drives = get_drive_list()
     print("ready to start add DOK to your computer")
 
@@ -45,11 +46,13 @@ if __name__ == '__main__':
 
     index = input("press the number for action:\n1 - put inside your dok the server files\n2 - decrypt your DOK\n3 - encrypt your DOK\n-> ")
     if not index == "1":
-        while True:
+        while not user:
             user_name = input("enter your user name ->")
             password = input("enter your password -> ")
-        else:
-            print("wrong user name or password\n")
+            if user_name in users.keys() and users[user_name] == password:
+                user = True
+            else:
+                print("wrong user name or password\n")
     while True:
         if index == "1":
             user_name , password = try_exe.run_full_process(dok)

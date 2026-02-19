@@ -1,5 +1,4 @@
 import base64
-
 from shared import symmetric_cypher
 import hashlib
 import os
@@ -28,7 +27,11 @@ def encrypt_file_name(file_path, key):
     encrypted_bytes = key.encrypt(old_name.encode())
     safe_name = base64.urlsafe_b64encode(encrypted_bytes).decode()
     new_path = os.path.join(directory, safe_name)
-    os.rename(file_path, new_path)
+    if not os.path.exists(new_path):
+        try:
+            os.rename(file_path, new_path)
+        except OSError as e:
+            pass
 
 
 def decrypt_file(file_path, key):
@@ -42,12 +45,15 @@ def decrypt_file(file_path, key):
 
 def decrypt_file_name(file_path, key):
     directory = os.path.dirname(file_path)
-    encrypted_name = os.path.basename(file_path)
-    encrypted_bytes = base64.urlsafe_b64decode(encrypted_name.encode())
-    decrypted_bytes = key.decrypt(encrypted_bytes)
-    original_name = decrypted_bytes.decode()
-    original_path = os.path.join(directory, original_name)
-    os.rename(file_path, original_path)
+    old_name = os.path.basename(file_path)
+    try:
+        encrypt_bytes = base64.urlsafe_b64decode(old_name.encode())
+        original_name = key.decrypt(encrypt_bytes).decode()
+        new_path = os.path.join(directory, original_name)
+        if not os.path.exists(new_path):
+            os.rename(file_path, new_path)
+    except Exception as e:
+        pass
 
 
 if __name__ == '__main__':
