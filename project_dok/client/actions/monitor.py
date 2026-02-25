@@ -60,7 +60,7 @@ class FileOpenerMonitor:
             self.initial_mtime = current_mtime
         else:
             flag = False
-        self.changeQ.put(flag)
+        self.changeQ.put((self.file_path, flag))
 
 
 
@@ -69,10 +69,8 @@ class FileOpenerMonitor:
 
 if __name__ == "__main__":
     myQ = queue.Queue()
-    if os.path.exists("D:\Screenshot 2025-12-18 180657.png"):
-        monitor = FileOpenerMonitor("D:\Screenshot 2025-12-18 180657.png", myQ)
-        monitor2 = FileOpenerMonitor("D:\Screenshot 2025-12-18 180657.png", myQ)
-        monitor3 = FileOpenerMonitor("D:\Screenshot 2025-12-18 180657.png", myQ)
+    if os.path.exists(r"E:\tevel.jpg"):
+        monitor = FileOpenerMonitor(r"E:\tevel.jpg", myQ)
         while True:
             if not myQ.empty():
                 print(myQ.get())

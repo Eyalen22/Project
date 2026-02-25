@@ -1,3 +1,5 @@
+import time
+
 import wx
 import os
 import sys
@@ -10,6 +12,7 @@ class DOKExplorerFrame(wx.Frame):
         self.drive_path = drive_path
         self.current_path = drive_path
         self.key = cypher_files.create_key(username, password)
+        wx.CallAfter(pub.sendMessage, "get_key", key=self.key)
         self.scan_and_process(mode="decrypt")
         self.SetBackgroundColour(wx.Colour(15, 15, 20))
         self.setup_ui()
@@ -48,32 +51,33 @@ class DOKExplorerFrame(wx.Frame):
         self.back_btn.Bind(wx.EVT_BUTTON, self.go_back)
         self.lock_btn.Bind(wx.EVT_BUTTON, self.on_lock_and_exit)
 
-    def scan_and_process(self, mode="decrypt"):
-        """סורק את ה-DOK ומפעיל את הפונקציות שלך עם החרגת ה-EXE"""
+    def scan_and_process(self, mode="encrypt"):
+        """סורק את ה-DOK באופן רקורסיבי ומעבד את כל הקבצים"""
         try:
-            # זיהוי שם הקובץ שמריץ את התוכנה כרגע (ה-EXE או ה-Python script)
             current_executable = os.path.basename(sys.executable if getattr(sys, 'frozen', False) else __file__)
-
-            for file in os.listdir(self.drive_path):
-                # החרגות: קבצים מוסתרים, ה-Vault, וה-EXE עצמו
-                if (file.startswith('.') or
-                        file == ".auth_vault" or
-                        file == current_executable or
-                        file == "app.exe"):  # ליתר ביטחון החרגנו גם שם גנרי אם הגדרת כזה
-                    continue
-
-                full_path = os.path.join(self.drive_path, file)
-                if os.path.isfile(full_path):
-                    if mode == "decrypt":
-                        cypher_files.decrypt_file_name(full_path, self.key)
-                    else:
-                        cypher_files.encrypt_file_name(full_path, self.key)
+            excluded_files = {current_executable, "client_logic.exe"}
+            excluded_dirs = {".auth_vault"}
+            for root, dirs, files in os.walk(self.drive_path, topdown=True):
+                dirs[:] = [d for d in dirs if d not in excluded_dirs and not d.startswith('.')]
+                for file in files:
+                    if file.startswith('.') or file in excluded_files:
+                        continue
+                    full_path = os.path.join(root, file)
+                    try:
+                        if os.path.isfile(full_path):
+                            if mode == "decrypt":
+                                cypher_files.decrypt_file_name(full_path, self.key)
+                            else:
+                                cypher_files.encrypt_file_name(full_path, self.key)
+                    except Exception as file_error:
+                        print(f"Error processing {full_path}: {file_error}")
         except Exception as e:
-            print(f"Error processing files: {e}")
+            print(f"General error during scan: {e}")
 
     def on_lock_and_exit(self, event):
         self.scan_and_process(mode="encrypt")
-        wx.Exit()
+        wx.CallAfter(self.Close)
+
 
     # שאר המתודות (load_directory, handle_click, go_back) נשארות ללא שינוי...
     def load_directory(self):
@@ -87,7 +91,7 @@ class DOKExplorerFrame(wx.Frame):
                 full_path = os.path.join(self.current_path, item)
                 is_dir = os.path.isdir(full_path)
                 btn = wx.Button(self.scrolled_window, label=f"{'📁' if is_dir else '📄'} {item}", style=wx.BU_LEFT)
-                btn.Bind(wx.EVT_BUTTON, lambda e, p=full_path: self.handle_click(p))
+                btn.Bind(wx.EVT_LEFT_DCLICK, lambda e, p=full_path: self.handle_click(p))
                 self.list_sizer.Add(btn, 0, wx.EXPAND | wx.BOTTOM, 1)
         except:
             pass
@@ -102,10 +106,11 @@ class DOKExplorerFrame(wx.Frame):
             print("in file exp:", path)
             wx.CallAfter(pub.sendMessage,"new_filename", file_path=path)
 
-            os.startfile(path) if os.name == 'nt' else None
 
     def go_back(self, e):
         parent = os.path.dirname(self.current_path)
         if len(parent) >= len(self.drive_path):
             self.current_path = parent
             self.load_directory()
+
+

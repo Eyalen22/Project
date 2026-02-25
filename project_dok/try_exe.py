@@ -9,8 +9,8 @@ def run_full_process(dok_path):
     username = input("Enter username -> ").strip()
     password = input("Enter password -> ").strip()
 
-    base_folder = r"E:\Project\project_dok\client"
-    main_script = os.path.join(base_folder, "design", "app.py")
+    base_folder = r"F:\Project\project_dok\client"
+    main_script = os.path.join(base_folder, "client_logic.py")
     vault_full_path = os.path.join(base_folder, ".auth_vault")
     exe_name = "OPEN_DOK"
     usb_drive = dok_path
