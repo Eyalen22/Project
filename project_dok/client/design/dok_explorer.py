@@ -1,19 +1,22 @@
-import time
-
-import wx
 import os
 import sys
-from actions import cypher_files  # וודא שהנתיב מוגדר ב-sys.path אם הקובץ בתיקייה אחרת
+import threading
+import wx
+from actions import cypher_files
 from pubsub import pub
+from design.Eject import LockProgressFrame
 
 class DOKExplorerFrame(wx.Frame):
     def __init__(self, username, password, drive_path):
         super().__init__(None, title=f"DOK Explorer - {username}", size=(900, 600))
         self.drive_path = drive_path
         self.current_path = drive_path
+        # יצירת המפתח פעם אחת בלבד
         self.key = cypher_files.create_key(username, password)
         wx.CallAfter(pub.sendMessage, "get_key", key=self.key)
+        # פענוח ראשוני בעת הכניסה
         self.scan_and_process(mode="decrypt")
+
         self.SetBackgroundColour(wx.Colour(15, 15, 20))
         self.setup_ui()
         self.load_directory()
@@ -22,6 +25,8 @@ class DOKExplorerFrame(wx.Frame):
     def setup_ui(self):
         self.panel = wx.Panel(self)
         main_sizer = wx.BoxSizer(wx.VERTICAL)
+
+        # Header setup
         header = wx.Panel(self.panel)
         header.SetBackgroundColour(wx.Colour(30, 30, 40))
         h_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -38,21 +43,18 @@ class DOKExplorerFrame(wx.Frame):
         h_sizer.Add(self.path_label, 1, wx.CENTER)
         h_sizer.Add(self.lock_btn, 0, wx.ALL, 10)
         header.SetSizer(h_sizer)
-
         self.scrolled_window = wx.ScrolledWindow(self.panel)
         self.scrolled_window.SetScrollRate(0, 20)
         self.list_sizer = wx.BoxSizer(wx.VERTICAL)
         self.scrolled_window.SetSizer(self.list_sizer)
-
         main_sizer.Add(header, 0, wx.EXPAND)
         main_sizer.Add(self.scrolled_window, 1, wx.EXPAND | wx.ALL, 5)
         self.panel.SetSizer(main_sizer)
-
         self.back_btn.Bind(wx.EVT_BUTTON, self.go_back)
         self.lock_btn.Bind(wx.EVT_BUTTON, self.on_lock_and_exit)
 
     def scan_and_process(self, mode="encrypt"):
-        """סורק את ה-DOK באופן רקורסיבי ומעבד את כל הקבצים"""
+        """המתודה המקורית שלך לעיבוד קבצים"""
         try:
             current_executable = os.path.basename(sys.executable if getattr(sys, 'frozen', False) else __file__)
             excluded_files = {current_executable, "client_logic.exe"}
@@ -75,11 +77,22 @@ class DOKExplorerFrame(wx.Frame):
             print(f"General error during scan: {e}")
 
     def on_lock_and_exit(self, event):
+        """פונקציה המופעלת בלחיצה על כפתור הנעילה"""
+        self.progress_win = LockProgressFrame(self)
+        self.progress_win.Show()
+        self.Hide()  # הסתרת הסייר
+
+        # הרצת תהליך הסגירה ב-Thread נפרד
+        threading.Thread(target=self.run_exit_process).start()
+
+    def run_exit_process(self):
+        """מתודה המנהלת את רצף הפעולות ביציאה"""
+        # 1. הצפנה מחדש (משתמש במתודה הקיימת ב-Class)
         self.scan_and_process(mode="encrypt")
-        wx.CallAfter(self.Close)
 
+        # 2. עדכון ממשק המשתמש לסיום
+        wx.CallAfter(self.progress_win.set_finished)
 
-    # שאר המתודות (load_directory, handle_click, go_back) נשארות ללא שינוי...
     def load_directory(self):
         self.list_sizer.Clear(True)
         self.path_label.SetLabel(self.current_path)
@@ -103,14 +116,11 @@ class DOKExplorerFrame(wx.Frame):
             self.current_path = path
             self.load_directory()
         else:
-            print("in file exp:", path)
-            wx.CallAfter(pub.sendMessage,"new_filename", file_path=path)
-
+            wx.CallAfter(pub.sendMessage, "new_filename", file_path=path)
 
     def go_back(self, e):
         parent = os.path.dirname(self.current_path)
         if len(parent) >= len(self.drive_path):
             self.current_path = parent
             self.load_directory()
-
 

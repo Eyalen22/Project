@@ -46,10 +46,10 @@ def decrypt_file(file_path, key):
 def decrypt_file_name(file_path, key):
     directory = os.path.dirname(file_path)
     old_name = os.path.basename(file_path)
-    encrypt_bytes = base64.urlsafe_b64decode(old_name.encode())
-    original_name = key.decrypt(encrypt_bytes).decode()
-    new_path = os.path.join(directory, original_name)
     try:
+        encrypt_bytes = base64.urlsafe_b64decode(old_name.encode())
+        original_name = key.decrypt(encrypt_bytes).decode()
+        new_path = os.path.join(directory, original_name)
         if not os.path.exists(new_path):
             os.rename(file_path, new_path)
     except Exception as e:

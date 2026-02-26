@@ -8,15 +8,12 @@ import PyInstaller.__main__
 def run_full_process(dok_path):
     username = input("Enter username -> ").strip()
     password = input("Enter password -> ").strip()
-
-    base_folder = r"F:\Project\project_dok\client"
+    base_folder = r"E:\Project\project_dok\client"
     main_script = os.path.join(base_folder, "client_logic.py")
     vault_full_path = os.path.join(base_folder, ".auth_vault")
     exe_name = "OPEN_DOK"
     usb_drive = dok_path
-
     print(f"--- Starting Build Process ---")
-
     u_hash = hashlib.sha256(username.encode()).hexdigest()
     p_hash = hashlib.sha256(password.encode()).hexdigest()
     with open(vault_full_path, "w") as f:
