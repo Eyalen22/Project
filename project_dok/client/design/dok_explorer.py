@@ -13,10 +13,9 @@ class DOKExplorerFrame(wx.Frame):
         self.current_path = drive_path
         # יצירת המפתח פעם אחת בלבד
         self.key = cypher_files.create_key(username, password)
-        wx.CallAfter(pub.sendMessage, "get_key", key=self.key)
+        wx.CallAfter(pub.sendMessage, "get_key", user_name= username, password=password)
         # פענוח ראשוני בעת הכניסה
         self.scan_and_process(mode="decrypt")
-
         self.SetBackgroundColour(wx.Colour(15, 15, 20))
         self.setup_ui()
         self.load_directory()

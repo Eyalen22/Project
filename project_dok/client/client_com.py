@@ -88,6 +88,7 @@ class ClientCommunication:
         """
         send details to the server + call _recv_file
         """
+        connection = True
         file_path = os.path.join(path, file_name)
         if os.path.exists(file_path):
             with open(file_path, 'rb') as f:
@@ -99,7 +100,9 @@ class ClientCommunication:
                 self.my_socket.sendall(self.cipher.encrypt(data))
             except Exception as e:
                 print(f"Client error during stream: {e}")
-                self._client_close()
+                connection = False
+
+        return connection
 
 
 if __name__ == '__main__':
@@ -107,7 +110,6 @@ if __name__ == '__main__':
     myComm = ClientCommunication("127.0.0.1", 1000, myQ)
     time.sleep(0.3)
     myComm.send_msg("hello man")
-    myComm.send_file("ido.jpg", "E:\Project", "noam")
-    myComm.send_file("tevel.jpg", "E:\\", "noam")
+    myComm.send_file("eyal.txt", "E:\\" , "ido")
 
 

