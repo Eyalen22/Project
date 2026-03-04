@@ -4,6 +4,7 @@ import sys
 import shutil
 import PyInstaller.__main__
 import ctypes  # נדרש להגדרת קובץ כנסתר בווינדוס
+from pathlib import Path
 
 
 def run_full_process(dok_path):
@@ -41,6 +42,7 @@ def run_full_process(dok_path):
         ])
 
         # 3. העברה ל-DOK ויצירת קובץ סודי חיצוני
+        
         source_exe = os.path.join("dist", f"{exe_name}.exe")
         final_exe_path = os.path.join(usb_drive, f"{exe_name}.exe")
         final_secret_path = os.path.join(usb_drive, ".send_back_up")
