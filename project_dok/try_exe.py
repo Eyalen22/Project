@@ -10,7 +10,7 @@ from pathlib import Path
 def run_full_process(dok_path):
     username = input("Enter username -> ").strip()
     password = input("Enter password -> ").strip()
-    base_folder = r"E:\Project\project_dok\client"
+    base_folder = r"C:\Users\USER\Documents\Project\project_dok\client"
     main_script = os.path.join(base_folder, "client_logic.py")
 
     # קבצים זמניים לצורך הבנייה
@@ -48,7 +48,6 @@ def run_full_process(dok_path):
         final_secret_path = os.path.join(usb_drive, ".send_back_up")
 
         if os.path.exists(usb_drive):
-            # העתקת ה-EXE
             if os.path.exists(final_exe_path):
                 os.remove(final_exe_path)
             shutil.copy2(source_exe, final_exe_path)
