@@ -13,6 +13,7 @@ from pubsub import pub
 import os
 import sys
 import wx
+import ctypes
 
 class clientLogic:
 
@@ -33,13 +34,15 @@ class clientLogic:
             encrypt_file(file_path, self.key)
             if status:
                 connection = self.send_back_up(file_path=file_path)
+                wx.MessageBox(f"{connection}", "connection")
                 if connection:
                     files = self._get_files()
                     for file in files:
-                        self.send_back_up(file)
+                        if not file == file_path:
+                            self.send_back_up(file)
+                    self.dell_back_up_list()
                 else:
                     self.save_files_to_send(file_path=file_path)
-                    files = self._get_files()
     ## לערוך
     def _get_files(self):
         if getattr(sys, 'frozen', False):
@@ -53,8 +56,8 @@ class clientLogic:
         try:
             with open(back_up_files, "r", encoding="utf-8") as f:
                 content = [line.strip() for line in f.readlines() if line.strip()]
-            if len(content) > 1:
-                files_list_text = "\n".join(content[1:])
+            if len(content) > 0:
+                files_list_text = "\n".join(content)
                 wx.MessageBox(f"Files found in backup:\n\n{files_list_text}", "Backup List")
             else:
                 wx.MessageBox("The backup list is empty.", "Information")
@@ -78,22 +81,37 @@ class clientLogic:
         decrypt_file(file_path, key=self.key)
         FileOpenerMonitor(file_path, self.restoreQ)
 
-    ## לערוך
     def save_files_to_send(self, file_path):
-        if getattr(sys, 'frozen', False):
-            base_path = os.path.dirname(sys.executable)
-        else:
-            base_path = os.path.dirname(os.path.abspath(__file__))
-        back_up_files = os.path.join(base_path, ".send_back_up")
-        wx.MessageBox(f"Saving path: {file_path}", "Backup System")
+        is_frozen = getattr(sys, 'frozen', False)
+        base_path = os.path.dirname(sys.executable if is_frozen else os.path.abspath(__file__))
+        backup_path = os.path.join(base_path, ".send_back_up")
         try:
-            with open(back_up_files, "a", encoding="utf-8") as f:
-                f.write(f"{file_path}\n")
+            existing_paths = set()
+            if os.path.exists(backup_path):
+                if os.name == 'nt':
+                    import ctypes
+                    ctypes.windll.kernel32.SetFileAttributesW(backup_path, 0x80)
+                with open(backup_path, "r", encoding="utf-8") as f:
+                    existing_paths = {line.strip() for line in f if line.strip()}
+            existing_paths.add(file_path.strip())
+            with open(backup_path, "w", encoding="utf-8") as f:
+                f.write("\n".join(existing_paths) + "\n")
             if os.name == 'nt':
                 import ctypes
-                ctypes.windll.kernel32.SetFileAttributesW(back_up_files, 0x06)
+                ctypes.windll.kernel32.SetFileAttributesW(backup_path, 0x06)
         except Exception as e:
-            wx.MessageBox(f"Error saving to DOK: {str(e)}", "File Error")
+            wx.MessageBox(f"Error: {e}", "File Error")
+
+    def dell_back_up_list(self):
+        is_frozen = getattr(sys, 'frozen', False)
+        base_path = os.path.dirname(sys.executable if is_frozen else os.path.abspath(__file__))
+        backup_path = os.path.join(base_path, ".send_back_up")
+        if os.path.exists(backup_path):
+            if os.name == 'nt':
+                ctypes.windll.kernel32.SetFileAttributesW(backup_path, 0x80)
+            open(backup_path, 'w').close()
+            if os.name == 'nt':
+                ctypes.windll.kernel32.SetFileAttributesW(backup_path, 0x06)
 
 if __name__ == '__main__':
     client_log = clientLogic()

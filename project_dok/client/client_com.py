@@ -10,26 +10,44 @@ from shared.symmetric_cypher import SymmetricCipher
 
 class ClientCommunication:
 
-
     def __init__(self, server_ip, port, recvQ):
-        self.my_socket = socket.socket()
+        self.my_socket = None
         self.server_ip = server_ip
         self.port = port
         self.recvQ = recvQ
         self.cipher = None
+        self._is_connected = False
 
-        threading.Thread(target=self._mainLoop).start()
+        # ה-Thread ירוץ ברקע
+        threading.Thread(target=self._mainLoop, daemon=True).start()
 
     def _mainLoop(self):
+        while True:
+            self._close_socket()
+            try:
+                print(f"[*] Trying to connect to {self.server_ip}:{self.port}...")
+                self.my_socket = socket.socket()
+                self.my_socket.connect((self.server_ip, self.port))
+                self._change_key()
+                if self.cipher:
+                    print("[V] Connected & Encrypted. Waiting for data...")
+                    self._is_connected = True
 
-        try:
-            self.my_socket.connect((self.server_ip, self.port))
-        except Exception as e:
-            print(f"error in connecting - {e}")
-            sys.exit("server not currently available - try later")
+                    # מיותר לבדוק דרך הSEND
+                    while self._is_connected:
+                        data = self.my_socket.recv(1024)
+                        if not data:  # השרת סגר את החיבור בצורה מסודרת
+                            break
+                        self.recvQ.put(data)
+                else:
+                    print("[-] Key exchange failed.")
 
-        self._change_key()
+            except (socket.error, Exception) as e:
+                print(f"[-] Connection failed: {e}")
 
+            # 5. אם הגענו לכאן, החיבור נפל או לא הצליח. מחכים ומנסים שוב.
+            print("[*] Sleeping 5 seconds before retrying...")
+            time.sleep(5)
 
     def _change_key(self):
         """
@@ -58,14 +76,18 @@ class ClientCommunication:
         else:
             print("error")
 
-
-    def _client_close(self):
-        """
-        closing socket
-        :return: None
-        """
-        self.my_socket.close()
-        sys.exit()
+    def _close_socket(self):
+        """ סגירה יסודית ללא sys.exit """
+        self.cipher = None
+        self._is_connected = False
+        if self.my_socket:
+            try:
+                self.my_socket.shutdown(socket.SHUT_RDWR)
+                self.my_socket.close()
+            except:
+                pass
+            finally:
+                self.my_socket = None
 
     def send_msg(self, msg):
         """
@@ -82,7 +104,7 @@ class ClientCommunication:
                 self.my_socket.send(new_msg)
             except Exception as e:
                 print(f"error in sending - {e}")
-                self._client_close()
+                self._close_socket()
 
     def send_file(self, file_name, path, user_name):
         """
@@ -107,9 +129,20 @@ class ClientCommunication:
 
 if __name__ == '__main__':
     myQ = queue.Queue()
-    myComm = ClientCommunication("127.0.0.1", 1000, myQ)
-    time.sleep(0.3)
-    myComm.send_msg("hello man")
-    myComm.send_file("eyal.txt", "E:\\" , "ido")
+    myComm = ClientCommunication("127.0.0.1", 2222, myQ)
+
+    print("[!] Client started. Press Ctrl+C to stop.")
+
+    # לולאה אינסופית ב-main כדי שהתוכנית לא תיסגר!
+    try:
+        while True:
+            # כאן אפשר לבדוק אם הגיע משהו ב-Q
+            if not myQ.empty():
+                msg = myQ.get()
+                print(f"New message from queue: {msg}")
+
+            time.sleep(1)  # לא לצרוך 100% מעבד
+    except KeyboardInterrupt:
+        print("\nExiting...")
 
 

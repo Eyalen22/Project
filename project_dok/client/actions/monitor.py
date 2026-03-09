@@ -69,8 +69,8 @@ class FileOpenerMonitor:
 
 if __name__ == "__main__":
     myQ = queue.Queue()
-    if os.path.exists(r"E:\tevel.jpg"):
-        monitor = FileOpenerMonitor(r"E:\tevel.jpg", myQ)
+    if os.path.exists(r"F:\יכולות מערכת רשי פרקים.pdf"):
+        monitor = FileOpenerMonitor(r"F:\יכולות מערכת רשי פרקים.pdf", myQ)
         while True:
             if not myQ.empty():
                 print(myQ.get())
