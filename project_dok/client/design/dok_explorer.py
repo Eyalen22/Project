@@ -88,8 +88,7 @@ class DOKExplorerFrame(wx.Frame):
         """מתודה המנהלת את רצף הפעולות ביציאה"""
         # 1. הצפנה מחדש (משתמש במתודה הקיימת ב-Class)
         self.scan_and_process(mode="encrypt")
-
-        # 2. עדכון ממשק המשתמש לסיום
+        #wx.CallAfter(pub.sendMessage, "get_out") - למחוק?
         wx.CallAfter(self.progress_win.set_finished)
 
     def load_directory(self):

@@ -1,6 +1,5 @@
 import wx
-
-
+from pubsub import pub
 class LockProgressFrame(wx.Frame):
     """חלון המתנה שמופיע בזמן תהליך הנעילה הסופי"""
 

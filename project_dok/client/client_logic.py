@@ -33,7 +33,8 @@ class clientLogic:
             file_path, status = self.restoreQ.get()
             encrypt_file(file_path, self.key)
             if status:
-                connection = self.send_back_up(file_path=file_path)
+                self.send_back_up(file_path=file_path)
+                connection = self.client_comm.get_is_connection()
                 wx.MessageBox(f"{connection}", "connection")
                 if connection:
                     files = self._get_files()
@@ -73,9 +74,7 @@ class clientLogic:
     def send_back_up(self, file_path):
         path = os.path.dirname(file_path)
         file_name = os.path.basename(file_path)
-        connection = self.client_comm.send_file(file_name=file_name, path=path, user_name=self.user_name)
-
-        return connection
+        self.client_comm.send_file(file_name=file_name, path=path, user_name=self.user_name)
 
     def monitor_file(self, file_path):
         decrypt_file(file_path, key=self.key)

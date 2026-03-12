@@ -211,7 +211,7 @@ if __name__ == '__main__':
     myComm = ServerCommunication(2222, myQ)
     time.sleep(1)
     while True:
-        pass
+        print(myQ.get())
 
 
 

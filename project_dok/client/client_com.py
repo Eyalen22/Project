@@ -1,9 +1,12 @@
 import socket
 import threading
 import sys
+from pubsub import pub
 import queue
 import time
 import os
+from operator import index
+
 from actions import client_protocol
 from shared.asymmetric_cypher import AsymmetricCipher
 from shared.symmetric_cypher import SymmetricCipher
@@ -16,9 +19,9 @@ class ClientCommunication:
         self.port = port
         self.recvQ = recvQ
         self.cipher = None
-        self._is_connected = False
+        self.is_connected = False
+        #pub.subscribe(self._close_socket, "get_out") - למחוק?
 
-        # ה-Thread ירוץ ברקע
         threading.Thread(target=self._mainLoop, daemon=True).start()
 
     def _mainLoop(self):
@@ -28,17 +31,12 @@ class ClientCommunication:
                 print(f"[*] Trying to connect to {self.server_ip}:{self.port}...")
                 self.my_socket = socket.socket()
                 self.my_socket.connect((self.server_ip, self.port))
-                self._change_key()
-                if self.cipher:
+                if self.my_socket:
                     print("[V] Connected & Encrypted. Waiting for data...")
-                    self._is_connected = True
-
-                    # מיותר לבדוק דרך הSEND
-                    while self._is_connected:
-                        data = self.my_socket.recv(1024)
-                        if not data:  # השרת סגר את החיבור בצורה מסודרת
-                            break
-                        self.recvQ.put(data)
+                    self._change_key()
+                    self.is_connected = True
+                    while self.is_connected:
+                        pass
                 else:
                     print("[-] Key exchange failed.")
 
@@ -79,7 +77,7 @@ class ClientCommunication:
     def _close_socket(self):
         """ סגירה יסודית ללא sys.exit """
         self.cipher = None
-        self._is_connected = False
+        self.is_connected = False
         if self.my_socket:
             try:
                 self.my_socket.shutdown(socket.SHUT_RDWR)
@@ -104,13 +102,12 @@ class ClientCommunication:
                 self.my_socket.send(new_msg)
             except Exception as e:
                 print(f"error in sending - {e}")
-                self._close_socket()
+                self.is_connected = False
 
     def send_file(self, file_name, path, user_name):
         """
         send details to the server + call _recv_file
         """
-        connection = True
         file_path = os.path.join(path, file_name)
         if os.path.exists(file_path):
             with open(file_path, 'rb') as f:
@@ -122,9 +119,11 @@ class ClientCommunication:
                 self.my_socket.sendall(self.cipher.encrypt(data))
             except Exception as e:
                 print(f"Client error during stream: {e}")
-                connection = False
+                self.is_connected = False
 
-        return connection
+    def get_is_connection(self):
+        return self.is_connected
+
 
 
 if __name__ == '__main__':
@@ -136,10 +135,9 @@ if __name__ == '__main__':
     # לולאה אינסופית ב-main כדי שהתוכנית לא תיסגר!
     try:
         while True:
-            # כאן אפשר לבדוק אם הגיע משהו ב-Q
-            if not myQ.empty():
-                msg = myQ.get()
-                print(f"New message from queue: {msg}")
+            index = input("press 1\n")
+            if index == "1":
+                myComm.send_msg("hi man")
 
             time.sleep(1)  # לא לצרוך 100% מעבד
     except KeyboardInterrupt:
