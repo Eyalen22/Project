@@ -2,6 +2,7 @@ import base64
 from shared import symmetric_cypher
 import hashlib
 import os
+import wx
 
 def create_key(user_name, password):
     new_password = password[::-1]
@@ -21,6 +22,7 @@ def encrypt_file(file_path, key):
         f.write(data)
 
 
+
 def encrypt_file_name(file_path, key):
     directory = os.path.dirname(file_path)
     old_name = os.path.basename(file_path)
@@ -38,9 +40,9 @@ def decrypt_file(file_path, key):
     with open(file_path, 'rb') as f:
         file_data = f.read()
         data = key.decrypt(file_data)
-
     with open(file_path, 'wb') as f:
         f.write(data)
+
 
 
 def decrypt_file_name(file_path, key):

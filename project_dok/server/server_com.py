@@ -72,7 +72,6 @@ class ServerCommunication:
     ## make pretty ##
 
     def _recv_file(self, client_soc, msg):
-
         opcode, parts =  server_protocol.unpack(msg)
         if not parts[2].isdigit():
             self._close_client(client_soc)

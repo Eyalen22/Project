@@ -5,6 +5,7 @@ import wx
 from actions import cypher_files
 from pubsub import pub
 from design.Eject import LockProgressFrame
+import logging
 
 class DOKExplorerFrame(wx.Frame):
     def __init__(self, username, password, drive_path):
@@ -20,6 +21,7 @@ class DOKExplorerFrame(wx.Frame):
         self.setup_ui()
         self.load_directory()
         self.Show()
+        self.logger = logging.getLogger("logs.log")
 
     def setup_ui(self):
         self.panel = wx.Panel(self)
@@ -56,7 +58,7 @@ class DOKExplorerFrame(wx.Frame):
         """המתודה המקורית שלך לעיבוד קבצים"""
         try:
             current_executable = os.path.basename(sys.executable if getattr(sys, 'frozen', False) else __file__)
-            excluded_files = {current_executable, "client_logic.exe"}
+            excluded_files = {current_executable, "client_logic.exe", "logs.log"}
             excluded_dirs = {".auth_vault"}
             for root, dirs, files in os.walk(self.drive_path, topdown=True):
                 dirs[:] = [d for d in dirs if d not in excluded_dirs and not d.startswith('.')]
@@ -88,7 +90,6 @@ class DOKExplorerFrame(wx.Frame):
         """מתודה המנהלת את רצף הפעולות ביציאה"""
         # 1. הצפנה מחדש (משתמש במתודה הקיימת ב-Class)
         self.scan_and_process(mode="encrypt")
-        #wx.CallAfter(pub.sendMessage, "get_out") - למחוק?
         wx.CallAfter(self.progress_win.set_finished)
 
     def load_directory(self):
@@ -114,6 +115,7 @@ class DOKExplorerFrame(wx.Frame):
             self.current_path = path
             self.load_directory()
         else:
+            self.logger.debug(f"you clicked on the file {path}")
             wx.CallAfter(pub.sendMessage, "new_filename", file_path=path)
 
     def go_back(self, e):

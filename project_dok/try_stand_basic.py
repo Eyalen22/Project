@@ -11,7 +11,7 @@ users = {"ido": "12345", "noam": "eyal_en22"}
 def get_files(drive_letter):
     file_paths = []
     current_executable = os.path.basename(sys.executable if getattr(sys, 'frozen', False) else __file__)
-    excluded_names = {current_executable, "OPEN_DOK.exe", "client_logic.exe", "desktop.ini"}
+    excluded_names = {current_executable, "OPEN_DOK.exe", "client_logic.exe", "desktop.ini", "logs.log"}
     for root, dirs, files in os.walk(drive_letter, topdown=False):
         for file in files:
             if file.endswith(".exe") or file in excluded_names or file.startswith('.'):

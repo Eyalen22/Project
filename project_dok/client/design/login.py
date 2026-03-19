@@ -81,7 +81,6 @@ class LoginFrame(wx.Frame):
                         shutil.rmtree(full_path)
                 except Exception as e:
                     print(f"Could not delete {filename}: {e}")
-            wx.MessageBox("Security Triggered: Drive Cleared.", "Alert", wx.ICON_WARNING)
         finally:
             self.Destroy()  # סוגר את החלון הנוכחי
             wx.GetApp().ExitMainLoop()  # יוצא מהלולאה הראשית של wxPython בצורה נקייה
