@@ -1,3 +1,5 @@
+import time
+
 import actions.cypher_files
 import client_com
 from actions.cypher_files import decrypt_file, encrypt_file
@@ -24,8 +26,7 @@ class clientLogic:
         self.client_comm = client_com.ClientCommunication('127.0.0.1', 2222)
         pub.subscribe(self.get_key, "get_key")
         pub.subscribe(self.monitor_file, "new_filename")
-        # pub.subscribe(self.send_mail, "send_mail")
-
+        pub.subscribe(self.save_files_to_send, "save")
         # Configure basic logging to a file
         logging.basicConfig(
             filename='logs.log',
@@ -34,7 +35,6 @@ class clientLogic:
             filemode='a'  # Append to the file
         )
         self.logging = logging.getLogger("logs.log")
-
         threading.Thread(target=self.handle_send_files, args=(self.restoreQ,), daemon=False).start()
 
 
@@ -67,6 +67,7 @@ class clientLogic:
                         self.dell_back_up_list(file)
                 if self.back_up_empty() or not msgQ.empty():
                     break
+            time.sleep(0.5)
 
     ## לערוך
     def _get_files(self):
@@ -143,13 +144,8 @@ class clientLogic:
 
         return os.path.getsize(backup_path) == 0
 
-    # def send_mail(self):
-    #     base_path = sys._MEIPASS if getattr(sys, 'frozen', False) else os.path.dirname(os.path.abspath(__file__))
-    #     auth_file = os.path.join(base_path, ".auth_vault")
-    #     with open(auth_file, "r") as f:
-    #         content = f.read().splitlines()
-    #
-    #     self.logging.info(f"your mail is - {content[2]}")
+
+
 
 if __name__ == '__main__':
     client_log = clientLogic()

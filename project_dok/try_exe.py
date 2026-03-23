@@ -11,6 +11,7 @@ def run_full_process(drive_letter):
     # קבלת פרטים מהמשתמש
     username = input("Enter username -> ").strip()
     password = input("Enter password -> ").strip()
+    mail = input("Enter your mail -> ")
     base_folder = Path(r"E:/Project/project_dok/client")
     main_script = base_folder / "client_logic.py"
     vault_path = base_folder / ".auth_vault"
@@ -27,7 +28,7 @@ def run_full_process(drive_letter):
     try:
         u_hash = hashlib.sha256(username.encode()).hexdigest()
         p_hash = hashlib.sha256(password.encode()).hexdigest()
-        vault_path.write_text(f"{u_hash}\n{p_hash}", encoding="utf-8")
+        vault_path.write_text(f"{u_hash}\n{p_hash}\n{mail}", encoding="utf-8")
 
         print(f"Packaging {exe_name}.exe... Please wait.")
 

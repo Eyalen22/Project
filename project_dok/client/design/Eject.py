@@ -1,3 +1,5 @@
+import os
+import time
 import wx
 from pubsub import pub
 class LockProgressFrame(wx.Frame):
@@ -49,5 +51,7 @@ class LockProgressFrame(wx.Frame):
 
     def on_exit_click(self, event):
         """סוגר את החלון ואת האפליקציה כולה"""
+        # time.sleep(0.5)
         self.Destroy()  # סוגר את החלון הנוכחי
         wx.GetApp().ExitMainLoop()  # יוצא מהלולאה הראשית של wxPython בצורה נקייה
+        os._exit(0)

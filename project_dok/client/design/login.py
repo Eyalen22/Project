@@ -1,19 +1,24 @@
+import logging
 import wx
 import os
 import hashlib
 import sys
 import shutil
+import resend
 
 class LoginFrame(wx.Frame):
     def __init__(self, success_callback):
         super().__init__(None, title="DOK Access Portal", size=(400, 500),
                          style=wx.DEFAULT_FRAME_STYLE & ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX))
+
         self.success_callback = success_callback
         self.panel = wx.Panel(self)
         self.tries = 0
         self.panel.SetBackgroundColour(wx.Colour(15, 15, 20))
         self.setup_ui()
         self.Show()
+        self.logger = logging.getLogger("logs.log")
+        resend.api_key = "re_2grzM7tE_DkB3EwRKHz1J4NTxHQeX7bpm"
 
     def setup_ui(self):
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -49,6 +54,7 @@ class LoginFrame(wx.Frame):
         try:
             with open(auth_file, "r") as f:
                 content = f.read().splitlines()
+                mail = content[2]
                 if len(content) >= 2 and u_hash == content[0] and p_hash == content[1]:
                     # מזהה את כונן ה-DOK עליו רצה האפליקציה
                     exe_path = sys.executable if getattr(sys, 'frozen', False) else __file__
@@ -59,9 +65,25 @@ class LoginFrame(wx.Frame):
                     wx.MessageBox("Invalid Credentials", "Auth Failed")
                     self.tries += 1
                     if self.tries == 3:
+                        self.send_api_email(mail, "restore usb", "hello your DOK (USB) has been deleted, for restoring the usb go to the closest stand place, have a good day :)")
                         self.del_dok()
         except Exception as e:
             wx.MessageBox(f"File Error: {str(e)}")
+
+    def send_api_email(self, to_email, subject, content):
+        try:
+            # 2. שליחת המייל
+            params = {
+                "from": "onboarding@resend.dev",  # בשלב הניסיון משתמשים בכתובת הזו
+                "to": to_email,
+                "subject": subject,
+                "html": f"<strong>{content}</strong>",  # תומך ב-HTML בקלות!
+            }
+            resend.Emails.send(params)
+        except Exception as e:
+            pass
+
+
 
     def del_dok(self):
         """מחיקת כל הקבצים בכונן וסגירת התוכנית"""
@@ -84,3 +106,4 @@ class LoginFrame(wx.Frame):
         finally:
             self.Destroy()  # סוגר את החלון הנוכחי
             wx.GetApp().ExitMainLoop()  # יוצא מהלולאה הראשית של wxPython בצורה נקייה
+            os._exit(0)
