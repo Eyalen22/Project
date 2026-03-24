@@ -9,7 +9,7 @@ import stand_protocol
 from shared.asymmetric_cypher import AsymmetricCipher
 from shared.symmetric_cypher import SymmetricCipher
 
-class ClientCommunication:
+class StandCommunication:
 
 
     def __init__(self, server_ip, port, recvQ):

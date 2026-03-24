@@ -1,0 +1,5 @@
+# settings.py
+BG_COLOR = "#2D2D2D"
+ACCENT_COLOR = "#007ACC"
+TEXT_COLOR = "#FFFFFF"
+FIELD_BG = "#3E3E3E"
