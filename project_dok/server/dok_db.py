@@ -3,7 +3,7 @@ import sqlite3
 class MyDB:
 
     def __init__(self):
-        self.db_Name = "DOK_DB.sql"
+        self.db_Name = "DOK_DB.sqlite"
         self.conn = None
         self.cursor = None
         self._create()
@@ -14,11 +14,12 @@ class MyDB:
         create DB
         :return: None
         '''
-        self.conn = sqlite3.connect(self.db_Name)
+        self.conn = sqlite3.connect(self.db_Name, check_same_thread=False)
         self.cursor = self.conn.cursor()
 
         sql_users = "CREATE TABLE IF NOT EXISTS users (username VARCHAR(10) PRIMARY KEY,password_hash VARCHAR(64), mail VARCHAR(50));"
-        sql_dok = "CREATE TABLE IF NOT EXISTS doks (username VARCHAR(10) PRIMARY KEY, dok VARCHAR(20));"
+        # בתוך פונקציית _create
+        sql_dok = "CREATE TABLE IF NOT EXISTS doks (username VARCHAR(10), dok VARCHAR(20), PRIMARY KEY (username, dok));"
         self.create(sql_users)
         self.create(sql_dok)
 
@@ -39,16 +40,6 @@ class MyDB:
         '''
         sql = f"SELECT * FROM users WHERE username = ?"
         self.cursor.execute(sql, (username,))
-        return not self.cursor.fetchone() is None
-
-    def _dok_exist(self, dok_name):
-        '''
-        checks if dok exist - return dok_name, else return None
-        :param dok_name: str
-        :return: return the dok_name if student exist else none
-        '''
-        sql = f"SELECT * FROM doks WHERE dok = ?"
-        self.cursor.execute(sql, (dok_name,))
         return not self.cursor.fetchone() is None
 
 
@@ -82,19 +73,18 @@ class MyDB:
         return status
 
     def add_dok(self, username, dok_name):
-        """
-        add dok data
-        :param username:str
-        :param dok_name: str
-        :return: true if seccses else false
-        """
         status = False
-        if not self._dok_exist(dok_name):
-            sql = f"INSERT INTO doks VALUES (?,?)"
-            self.cursor.execute(sql, (username,dok_name))
-            self.conn.commit()
-            status = True
-
+        if self._user_exist(username):
+            try:
+                sql = "INSERT INTO doks (username, dok) VALUES (?, ?)"
+                self.cursor.execute(sql, (username, dok_name))
+                self.conn.commit()
+                status = True
+            except sqlite3.IntegrityError:
+                print(f"Notice: The pair {username} and {dok_name} already exists.")
+                status = False
+            except Exception as e:
+                print(f"An unexpected error occurred: {e}")
         return status
 
 
@@ -127,6 +117,25 @@ class MyDB:
             print(f"Error retrieving email: {e}")
             return None
 
+    def user_exist(self, username, password):
+        '''
+        Checks if a user exists with the given username AND password.
+        :param username: str
+        :param password: str
+        :return: bool - True if the combination exists, False otherwise.
+        '''
+        sql = "SELECT * FROM users WHERE username = ? AND password_hash = ?"
+        self.cursor.execute(sql, (username, password))
+        result = self.cursor.fetchone()
+        return result is not None
+
+    def get_user_doks(self, username):
+        """מחזירה רשימה של כל שמות ה-DOKs ששייכים למשתמש"""
+        sql = "SELECT dok FROM doks WHERE username = ?"
+        self.cursor.execute(sql, (username,))
+        results = self.cursor.fetchall()
+        # הופך רשימה של טאפלים [(dok1,), (dok2,)] לרשימה פשוטה ['dok1', 'dok2']
+        return [row[0] for row in results]
 
 if __name__ == '__main__':
     myDB = MyDB()

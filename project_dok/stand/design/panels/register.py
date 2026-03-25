@@ -49,8 +49,6 @@ class RegisterPanel(wx.Panel):
         password = self.pwd.GetValue().strip()
 
         if user_name and mail and password:
-            # הדפסת כל נתוני ההרשמה
-            msg = f"user = {user_name}, mail = {mail}, password = {password}"
-            wx.CallAfter(pub.sendMessage, "got_msg", msg=msg)
+            wx.CallAfter(pub.sendMessage, "sign_in", user_name=user_name, mail=mail, password=password)
         else:
-            wx.MessageBox("All fields are required for registration!", "Register Error", wx.OK | wx.ICON_WARNING)
+            wx.MessageBox("missing Credentials", "missing")

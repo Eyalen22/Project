@@ -124,7 +124,6 @@ class ClientCommunication:
             ctypes.sizeof(volumeNameBuffer),
             None, None, None, None, 0
         )
-
         return volumeNameBuffer.value
 
     def replace_drive_with_name(self, full_path, volume_name):

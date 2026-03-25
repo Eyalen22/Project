@@ -210,7 +210,15 @@ if __name__ == '__main__':
     myComm = ServerCommunication(2222, myQ)
     time.sleep(1)
     while True:
-        print(myQ.get())
+        if not myQ.empty():
+            ip, msg = myQ.get()
+            opcode, clear_msg = server_protocol.unpack(msg)
+            print(f"opcode = {opcode}, params = {clear_msg}")
+            if opcode == "01":
+                myComm.send_msg(ip, server_protocol.pack_status("03", "nice try"))
+            else:
+                myComm.send_msg(ip, server_protocol.pack_status("00", "got it man"))
+
 
 
 

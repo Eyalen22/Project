@@ -138,7 +138,7 @@ class StandCommunication:
 if __name__ == '__main__':
     if __name__ == '__main__':
         myQ = queue.Queue()
-        myComm = ClientCommunication("127.0.0.1", 1000, myQ)
+        myComm = StandCommunication("127.0.0.1", 2222, myQ)
         time.sleep(0.3)
         while True:
             pass

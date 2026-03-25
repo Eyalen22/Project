@@ -41,8 +41,6 @@ class LoginPanel(wx.Panel):
         password = self.pwd.GetValue().strip()
 
         if user_name and password:
-            # הדפסת כל הנתונים
-            msg = f"[LOGIN] Attempting login with - User: {user_name}, Password: {password}"
-            wx.CallAfter(pub.sendMessage, "got_msg", msg=msg)
+            wx.CallAfter(pub.sendMessage, "log_in", user_name= user_name, password= password)
         else:
-            wx.MessageBox("Please enter both username and password.", "Login Error", wx.OK | wx.ICON_ERROR)
+            wx.MessageBox("missing Credentials", "missing")

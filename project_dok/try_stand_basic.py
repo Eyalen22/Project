@@ -1,6 +1,5 @@
-from operator import index
 from client.actions import cypher_files
-import try_exe
+import create_exe
 import os
 import string
 import sys

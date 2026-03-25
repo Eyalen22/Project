@@ -7,11 +7,7 @@ import ctypes
 from pathlib import Path
 
 
-def run_full_process(drive_letter):
-    # קבלת פרטים מהמשתמש
-    username = input("Enter username -> ").strip()
-    password = input("Enter password -> ").strip()
-    mail = input("Enter your mail -> ")
+def run_full_process(drive_letter, username, password, mail):
     base_folder = Path(r"E:/Project/project_dok/client")
     main_script = base_folder / "client_logic.py"
     vault_path = base_folder / ".auth_vault"
@@ -20,7 +16,7 @@ def run_full_process(drive_letter):
     print(f"\n--- Starting Build Process (Hybrid OS/Pathlib) ---")
     if not os.path.exists(usb_drive_str):
         print(f"CRITICAL ERROR: Drive {usb_drive_str} not found!")
-        return username, password
+        return "01"
     usb_path = Path(usb_drive_str)
     final_exe_path = usb_path / f"{exe_name}.exe"
     final_secret_path = usb_path / ".send_back_up"
@@ -53,17 +49,11 @@ def run_full_process(drive_letter):
             shutil.copy2(source_exe, final_exe_path)
         else:
             print("Error: EXE was not created.")
-            return username, password
-
-        # טיפול ב-Attribute של הקובץ (שימוש ב-os/ctypes כי זה Tricky)
+            return "01"
         if final_secret_path.exists():
             if os.name == 'nt':
                 ctypes.windll.kernel32.SetFileAttributesW(str(final_secret_path), 0x80)
-
-        # כתיבת קובץ הגיבוי
         final_secret_path.write_text("", encoding="utf-8")
-
-        # הגדרת נסתר + מערכת
         if os.name == 'nt':
             ctypes.windll.kernel32.SetFileAttributesW(str(final_secret_path), 0x06)
 
@@ -71,9 +61,7 @@ def run_full_process(drive_letter):
 
     except Exception as e:
         print(f"Error during process: {e}")
-
     finally:
-        # 4. ניקוי (Pathlib עושה את זה אלגנטי)
         print("Cleaning up...")
         for folder_name in ['build', 'dist']:
             folder = Path(folder_name)
@@ -87,7 +75,7 @@ def run_full_process(drive_letter):
                 except:
                     pass
 
-    return username, password
+    return "00"
 
 
 if __name__ == "__main__":
