@@ -134,7 +134,6 @@ class MyDB:
         sql = "SELECT dok FROM doks WHERE username = ?"
         self.cursor.execute(sql, (username,))
         results = self.cursor.fetchall()
-        # הופך רשימה של טאפלים [(dok1,), (dok2,)] לרשימה פשוטה ['dok1', 'dok2']
         return [row[0] for row in results]
 
 if __name__ == '__main__':

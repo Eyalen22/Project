@@ -1,4 +1,6 @@
+import os
 import queue
+import shutil
 import threading
 import threading
 from design.App import AppStand
@@ -17,32 +19,25 @@ class StandLogic:
         self.temp_password = None
         self.temp_dok_path = None
         self.temp_user = None
+        self.commends = {"00": self.send_status, "01": self.send_status, "06": self.download, "07": self.get_doks, "11": self.all_restore_action}
         pub.subscribe(self.sign_in, "sign_in")
         pub.subscribe(self.log_in, "log_in")
         pub.subscribe(self.add_dok, "add_dok")
+        pub.subscribe(self.mide_restore, "get_user_doks")
+        pub.subscribe(self.restore, "restore_request")
         threading.Thread(target=self.handle_msg, daemon=True).start()
 
     def handle_msg(self):
+        """
+        doing everything
+        :return:
+        """
         while True:
             packed_msg = self.msgQ.get()
             opcode, msg = stand_protocol.unpack(packed_msg)
-            if opcode == "11":
-                print("time to restore")
-            elif opcode == "06":
-                status = msg[0]
-                if status == "00":
-                    # status = create_exe.run_full_process(self.temp_dok_path,
-                    #                             self.temp_user,
-                    #                             self.temp_password,
-                    #                             msg[1])
-                    print("start exe")
-                else:
-                    print("error")
-                self.kill_temp()
-                self.designQ.put(status)
-            else:
-                print(msg[0])
-                self.designQ.put(msg[0])
+            self.commends[opcode](msg)
+
+
 
     def sign_in(self, user_name, password, mail):
         self.stand_com.send_msg(stand_protocol.pack_sigh_in(opcode="00", user_name=user_name, password=password, mail=mail))
@@ -57,8 +52,13 @@ class StandLogic:
         self.temp_dok_path = dok_path
 
 
-    def restore(self, user_name, dok_name):
+    def restore(self, user_name, dok_name, dok_path):
         self.stand_com.send_msg(stand_protocol.pack_restore(opcode="04", user_name=user_name, dok_path=dok_name))
+        self.temp_dok_path = dok_path
+        self.temp_user = user_name
+
+    def mide_restore(self, user_name):
+        self.stand_com.send_msg(stand_protocol.pack_mide_restore(opcode="07", user_name=user_name))
 
     def kill_temp(self):
         self.temp_password = None
@@ -66,7 +66,62 @@ class StandLogic:
         self.temp_dok_path = None
 
     def restore_to_dok(self):
-        pass
+        user_folder_path = os.path.join(r"C:\Users\talmid\Downloads", self.temp_user)
+        if not os.path.exists(user_folder_path):
+            print(f"Error: {user_folder_path} does not exist!")
+            return "01"
+        try:
+            content = os.listdir(user_folder_path)
+            if not content:
+                print("User folder is empty!")
+                return "01"
+            dok_folder_name = content[0]
+            full_dok_path = os.path.join(user_folder_path, dok_folder_name)
+            print(f"Copying files from {dok_folder_name} directly to {self.temp_dok_path}...")
+            for item in os.listdir(full_dok_path):
+                source = os.path.join(full_dok_path, item)
+                destination = os.path.join(self.temp_dok_path, item)
+                if os.path.isdir(source):
+                    if os.path.exists(destination):
+                        shutil.rmtree(destination)
+                    shutil.copytree(source, destination)
+                else:
+                    shutil.copy2(source, destination)
+            shutil.rmtree(user_folder_path)
+            print("Restore finished. Downloads folder is clean.")
+            return "00"
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            return "01"
+
+
+    ###
+    def send_status(self, msg):
+        print(msg[0])
+        self.designQ.put(msg[0])
+
+    def download(self, msg):
+        status = msg[0]
+        if status == "00":
+            status = create_exe.run_full_process(self.temp_dok_path, self.temp_user, self.temp_password, msg[1])
+        self.kill_temp()
+        self.designQ.put(status)
+
+    def get_doks(self, msg):
+        data = msg[0]
+        if not data or data == "EMPTY":
+            self.designQ.put("EMPTY_RESTORE")
+        else:
+            formatted_msg = f"LIST:{data}"
+            self.designQ.put(formatted_msg)
+
+    def all_restore_action(self, msg):
+        status = msg[0]
+        if status == "00":
+            status = self.restore_to_dok()
+        print(f"temp's - {self.temp_user}, {self.temp_dok_path}")
+        self.kill_temp()
+        self.designQ.put(status)
 
     def get_msg(self, msg):
         print(msg)

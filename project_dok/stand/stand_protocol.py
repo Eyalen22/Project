@@ -22,3 +22,5 @@ def pack_add_dok(opcode, user_name, dok_path):
 
 def pack_restore(opcode, user_name, dok_path):
     return f"{opcode}@#2{user_name}@#2{dok_path}"
+def pack_mide_restore(opcode, user_name):
+    return f"{opcode}@#2{user_name}"

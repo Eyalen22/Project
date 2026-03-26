@@ -9,7 +9,9 @@ from design.panels.main.main_app import MainAppPanel
 from design.panels.main.add.add_dok import AddDokPanel
 from design.panels.main.restore.restore import RestorePanel
 from design.panels.main.add.confirm_add import ConfirmAddPanel
-from design.panels.main.add.process_status import ProcessStatusPanel # ייבוא המסך החדש
+from design.panels.main.add.process_status_add import ProcessStatusPanelAdd
+from design.panels.main.restore.process_status_restore import ProcessStatusPanelRestore
+
 
 class MainFrame(wx.Frame):
     def __init__(self, msg_queue):
@@ -17,7 +19,6 @@ class MainFrame(wx.Frame):
 
         self.msg_queue = msg_queue
 
-        # --- הכספת הסודית בזיכרון (RAM) ---
         self.temp_user = None
         self.temp_pass = None
         self.container = wx.Panel(self)
@@ -31,7 +32,8 @@ class MainFrame(wx.Frame):
             "add_dok": AddDokPanel(self.container, self),
             "restore_dok": RestorePanel(self.container, self),
             "confirm_add": ConfirmAddPanel(self.container, self),
-            "process_status": ProcessStatusPanel(self.container, self)
+            "process_status_add": ProcessStatusPanelAdd(self.container, self),
+            "process_status_restore": ProcessStatusPanelRestore(self.container, self)
         }
 
         for screen in self.screens.values():
@@ -54,6 +56,10 @@ class MainFrame(wx.Frame):
             p.Show(n == name)
         if name == "add_dok":
             self.screens["add_dok"].start_scan()
+        elif name == "main_app":
+            self.screens["main_app"].update_user(self.temp_user)
+            for n, p in self.screens.items():
+                p.Show(n == name)
         self.container.Layout()
 
     def logout_user(self):
@@ -65,18 +71,31 @@ class MainFrame(wx.Frame):
     def on_check_queue(self, event):
         try:
             msg = self.msg_queue.get_nowait()
-            is_in_process_screen = self.screens["process_status"].IsShown()
-            if msg == "00":
-                if is_in_process_screen:
-                    self.screens["process_status"].set_final_status(success=True)
+            is_in_add_process = self.screens["process_status_add"].IsShown()
+            is_in_restore_process = self.screens["process_status_restore"].IsShown()
+            if isinstance(msg, str) and msg.startswith("LIST:"):
+                actual_data = msg.replace("LIST:", "")
+                raw_list = actual_data.split("@#")
+                clean_list = [name.strip() for name in raw_list if name.strip()]
+                self.screens["restore_dok"].update_dok_list(clean_list)
+                self.show_screen("restore_dok")
+            elif msg == "EMPTY_RESTORE":
+                self.screens["restore_dok"].update_dok_list([])
+                self.show_screen("restore_dok")
+            elif msg == "00":
+                if is_in_add_process:
+                    self.screens["process_status_add"].set_final_status(success=True)
+                elif is_in_restore_process:
+                    self.screens["process_status_restore"].set_final_status(success=True)
                 else:
                     self.handle_auth_success()
             elif msg == "01":
-                if is_in_process_screen:
-                    self.screens["process_status"].set_final_status(success=False)
+                if is_in_add_process:
+                    self.screens["process_status_add"].set_final_status(success=False)
+                elif is_in_restore_process:
+                    self.screens["process_status_restore"].set_final_status(success=False)
                 else:
-                    wx.MessageBox("Invalid Credentials", "error", wx.OK | wx.ICON_ERROR)
-
+                    wx.MessageBox("Action failed. Check your credentials.", "Error", wx.OK | wx.ICON_ERROR)
         except queue.Empty:
             pass
 

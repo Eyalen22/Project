@@ -49,6 +49,8 @@ class RegisterPanel(wx.Panel):
         password = self.pwd.GetValue().strip()
 
         if user_name and mail and password:
+            self.controller.temp_user = user_name
+            self.controller.temp_pass = password
             wx.CallAfter(pub.sendMessage, "sign_in", user_name=user_name, mail=mail, password=password)
         else:
             wx.MessageBox("missing Credentials", "missing")

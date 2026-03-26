@@ -20,7 +20,7 @@ class ClientCommunication:
         self.port = port
         self.cipher = None
         self.is_connected = False
-        # pub.subscribe(self._close_socket, "close_client")
+        pub.subscribe(self._close_socket, "client_shutdown")
         threading.Thread(target=self._mainLoop, daemon=False).start()
 
     def _mainLoop(self):

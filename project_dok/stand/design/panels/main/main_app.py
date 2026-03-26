@@ -1,5 +1,7 @@
 import wx
 from design.settings import *
+from pubsub import pub  # אל תשכח לייבא את pub
+
 
 class MainAppPanel(wx.Panel):
     def __init__(self, parent, controller):
@@ -11,7 +13,7 @@ class MainAppPanel(wx.Panel):
         main_sizer = wx.BoxSizer(wx.VERTICAL)
 
         self.header = wx.StaticText(self, label="SECURE COMMAND CENTER")
-        self.header.SetForegroundColour("#00FF00") # ירוק "מטריקס"
+        self.header.SetForegroundColour("#00FF00")
         self.header.SetFont(wx.Font(22, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD))
 
         self.user_welcome = wx.StaticText(self, label="Welcome, Agent")
@@ -23,39 +25,48 @@ class MainAppPanel(wx.Panel):
         self.btn_restore = self.create_styled_button("RESTORE BACKUP", "#1A1A1A", "#2196F3")
         self.btn_logout = self.create_styled_button("LOG OUT", "#1A1A1A", "#F44336")
 
-        # אירועים - עובר אוטומטית למסכים החדשים
+        # --- אירועים מעודכנים ---
         self.btn_add.Bind(wx.EVT_BUTTON, lambda e: self.controller.show_screen("add_dok"))
-        self.btn_restore.Bind(wx.EVT_BUTTON, lambda e: self.controller.show_screen("restore_dok"))
+
+        # שינינו את זה מ-lambda לפונקציה מסודרת ששולחת PUB
+        self.btn_restore.Bind(wx.EVT_BUTTON, self.on_restore_click)
+
         self.btn_logout.Bind(wx.EVT_BUTTON, self.on_logout)
 
         # סידור בתוך המסך
         main_sizer.Add(self.header, 0, wx.ALIGN_CENTER | wx.TOP, 40)
         main_sizer.Add(self.user_welcome, 0, wx.ALIGN_CENTER | wx.BOTTOM, 50)
-
         main_sizer.Add(self.btn_add, 0, wx.ALIGN_CENTER | wx.ALL, 10)
         main_sizer.Add(self.btn_restore, 0, wx.ALIGN_CENTER | wx.ALL, 10)
-
         main_sizer.AddStretchSpacer()
         main_sizer.Add(self.btn_logout, 0, wx.ALIGN_CENTER | wx.BOTTOM, 40)
 
         self.SetSizer(main_sizer)
 
+    # --- הפונקציה החדשה שביקשת ---
+    def on_restore_click(self, event):
+        """שליחת בקשה ל-Logic לקבלת רשימת ה-DOKs לפני המעבר למסך"""
+        wx.CallAfter(pub.sendMessage, "get_user_doks", user_name=self.username)
+        self.btn_restore.SetLabel("LOADING LIST...")
+        self.btn_restore.Disable()
+
     def create_styled_button(self, label, bg, border_color):
-        """יוצר כפתור עם עיצוב מודרני"""
         btn = wx.Button(self, label=label, size=(280, 60))
         btn.SetBackgroundColour(bg)
         btn.SetForegroundColour(TEXT_COLOR)
         btn.SetFont(wx.Font(11, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD))
-
-        # אפקט פשוט למעבר עכבר
         btn.Bind(wx.EVT_ENTER_WINDOW, lambda e: btn.SetBackgroundColour(border_color))
         btn.Bind(wx.EVT_LEAVE_WINDOW, lambda e: btn.SetBackgroundColour(bg))
         return btn
 
     def update_user(self, username):
+        """מעדכן את שם המשתמש ומאפס את מצב הכפתורים"""
         self.username = username
         self.user_welcome.SetLabel(f"Active Session: {username.upper()}")
-        self.Layout()
+        self.btn_restore.SetLabel("RESTORE BACKUP")  # מחזיר את הטקסט המקורי
+        self.btn_restore.Enable()  # מחזיר אותו להיות לחיץ
+        self.Layout()  # מרענן את התצוגה של הפאנל
 
     def on_logout(self, event):
         self.controller.logout_user()
+

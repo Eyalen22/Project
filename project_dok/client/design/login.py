@@ -1,3 +1,4 @@
+import ctypes
 import logging
 import wx
 import os
@@ -5,6 +6,8 @@ import hashlib
 import sys
 import shutil
 import resend
+from pubsub import pub
+
 
 class LoginFrame(wx.Frame):
     def __init__(self, success_callback):
@@ -83,10 +86,8 @@ class LoginFrame(wx.Frame):
         except Exception as e:
             pass
 
-
-
     def del_dok(self):
-        """מחיקת כל הקבצים בכונן וסגירת התוכנית"""
+        """מחיקה בטוחה של קבצים גלויים וסגירה מסודרת דרך ה-Client"""
         exe_path = sys.executable if getattr(sys, 'frozen', False) else __file__
         drive_path = os.path.splitdrive(os.path.abspath(exe_path))[0] + os.sep
         current_file = os.path.abspath(exe_path)
@@ -96,14 +97,28 @@ class LoginFrame(wx.Frame):
                 full_path = os.path.abspath(file_path)
                 if full_path == current_file:
                     continue
+                attrs = ctypes.windll.kernel32.GetFileAttributesW(full_path)
+                if attrs & 2 or attrs & 4:  # 2=Hidden, 4=System
+                    continue
                 try:
                     if os.path.isfile(full_path) or os.path.islink(full_path):
                         os.unlink(full_path)
                     elif os.path.isdir(full_path):
                         shutil.rmtree(full_path)
+                    print(f"[DOK] Deleted: {filename}")
                 except Exception as e:
                     print(f"Could not delete {filename}: {e}")
         finally:
-            self.Destroy()  # סוגר את החלון הנוכחי
-            wx.GetApp().ExitMainLoop()  # יוצא מהלולאה הראשית של wxPython בצורה נקייה
-            os._exit(0)
+            print("[DOK] Cleanup finished, triggering shutdown sequence...")
+            wx.CallAfter(self.complete_shutdown)
+
+    def complete_shutdown(self):
+        """מבצע את כל פעולות הסגירה בסדר הנכון"""
+        pub.sendMessage("client_shutdown")
+
+        print("[UI] Destroying windows and killing process...")
+        top_window = wx.GetApp().GetTopWindow()
+        if top_window:
+            top_window.Destroy()
+
+        os._exit(0)

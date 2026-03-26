@@ -38,18 +38,25 @@ class ServerCommunication:
                 else:
                     try:
                         long = int.from_bytes(current_client.recv(4), byteorder='big')
-                        encrypt_msg = current_client.recv(long)
+                        if long > 0:
+                            encrypt_msg = current_client.recv(long)
+                        else:
+                            encrypt_msg = b""
+                            self._close_client(current_client)
                     except Exception as e:
                         print(f"error in recv- {e}")
                         self._close_client(current_client)
                         print(f"client disconnected - {e}")
                     else:
-                        msg = self.open_clients[current_client][1].decrypt(encrypt_msg).decode()
-                        if not msg[0:2] == "03":
-                            self.recvQ.put((self.open_clients[current_client][0], msg))
-                        else:
-                            self._recv_file(current_client, msg)
-
+                        if encrypt_msg:
+                            msg = self.open_clients[current_client][1].decrypt(encrypt_msg).decode()
+                            if msg:
+                                if not msg[0:2] == "03":
+                                    self.recvQ.put((self.open_clients[current_client][0], msg))
+                                else:
+                                    self._recv_file(current_client, msg)
+                            else:
+                                self._close_client(current_client)
 
 
     def _change_key(self, client_soc, client_ip):

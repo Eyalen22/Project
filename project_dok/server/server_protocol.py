@@ -14,3 +14,5 @@ def pack_restore(opcode, file_name, file_path, file_len):
     return f"{opcode}@#2{file_name}@#2{file_path}@#2{file_len}"
 def pack_add_dok(opcode, status, mail):
     return f"{opcode}@#2{status}@#2{mail}"
+def pack_get_doks_name(opcode, msg):
+    return f"{opcode}@#2{msg}"

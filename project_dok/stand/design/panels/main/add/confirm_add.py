@@ -64,8 +64,8 @@ class ConfirmAddPanel(wx.Panel):
 
     def on_start(self, event):
         # הכנת מסך הסטטוס למצב המתנה
-        self.controller.screens["process_status"].show_waiting()
-        self.controller.show_screen("process_status")
+        self.controller.screens["process_status_add"].show_waiting()
+        self.controller.show_screen("process_status_add")
 
         # שליחת הודעת ה-PubSub ללוגיקה
         wx.CallAfter(pub.sendMessage, "add_dok",
