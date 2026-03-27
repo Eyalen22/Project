@@ -8,6 +8,7 @@ from design.settings import *
 
 class AddDokPanel(wx.Panel):
     def __init__(self, parent, controller):
+        """Initializes the USB scanning panel and sets up the UI for device detection"""
         super().__init__(parent)
         self.controller = controller
         self.SetBackgroundColour(BG_COLOR)
@@ -38,11 +39,11 @@ class AddDokPanel(wx.Panel):
         self.SetSizer(sizer)
 
     def get_drive_list(self):
-        """הלוגיקה שלך: מחזירה רשימת אותיות כוננים קיימים"""
+        """Returns a list of all currently connected drive letters on the system"""
         return [f"{letter}:\\" for letter in string.ascii_uppercase if os.path.exists(f"{letter}:\\")]
 
     def get_volume_name(self, drive_letter):
-        """שואב את השם הפנימי של ה-DOK (למשל 'EYAL_USB')"""
+        """Retrieves the internal volume label of a specific drive using Windows API"""
         try:
             kernel32 = ctypes.windll.kernel32
             volumeNameBuffer = ctypes.create_unicode_buffer(1024)
@@ -53,7 +54,7 @@ class AddDokPanel(wx.Panel):
             return "Unknown Device"
 
     def start_scan(self):
-        """פונקציה שנקראת מה-FrameManager כשנכנסים למסך"""
+        """Begins a background thread to monitor USB ports for newly inserted devices"""
         if self.scanning:
             return
         self.scanning = True
@@ -63,7 +64,7 @@ class AddDokPanel(wx.Panel):
         threading.Thread(target=self.scan_loop, daemon=True).start()
 
     def scan_loop(self):
-        """לולאת הבדיקה השקטה"""
+        """Continuously checks for drive changes and triggers an event when a new device is detected"""
         while self.scanning:
             current_drives = self.get_drive_list()
             new_found = [d for d in current_drives if d not in self.initial_drives]
@@ -75,11 +76,12 @@ class AddDokPanel(wx.Panel):
             time.sleep(1)
 
     def on_device_detected(self, name, letter):
-        """פונקציה שנקראת מה-scan_loop כשנמצא כונן חדש"""
+        """Stops the scan thread and transitions to the confirmation screen with the detected drive info"""
         self.scanning = False # עוצרים את ה-Thread של הסריקה
         self.controller.screens["confirm_add"].setup_drive(name, letter)
         wx.CallAfter(self.controller.show_screen, "confirm_add")
 
     def on_back(self, event):
+        """Terminates the scanning process and returns the user to the main application menu"""
         self.scanning = False
         self.controller.show_screen("main_app")

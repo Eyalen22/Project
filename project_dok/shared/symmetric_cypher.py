@@ -3,11 +3,13 @@ from Crypto.Random import get_random_bytes
 import hashlib
 
 class SymmetricCipher:
+    """Handles symmetric encryption and decryption using AES in CFB mode with a derived IV"""
 
     SYMMETRIC_KEY_SIZE = 32
     MODE = AES.MODE_CFB
 
     def __init__(self, symmetric_key: bytes):
+        """Initializes the cipher with a key and generates a consistent IV using SHA-256 hashing"""
         self.key = symmetric_key
         self.generated_iv = hashlib.sha256(self.key).digest()[:16]
 
@@ -42,4 +44,3 @@ if __name__ == '__main__':
     mySym2 = SymmetricCipher(key)
     bb = mySym2.decrypt(enc_msg).decode()
     print(bb)
-

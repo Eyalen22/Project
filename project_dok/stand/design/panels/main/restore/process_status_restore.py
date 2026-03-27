@@ -5,9 +5,9 @@ import os
 import string
 from pubsub import pub
 
-
 class ProcessStatusPanelRestore(wx.Panel):
     def __init__(self, parent, controller):
+        """Initializes the restore status panel, including status labels and the background scanning components"""
         super().__init__(parent)
         self.controller = controller
         self.SetBackgroundColour("#2b2b2b")
@@ -44,6 +44,7 @@ class ProcessStatusPanelRestore(wx.Panel):
         self.SetSizer(self.main_sizer)
 
     def start_restore_scan(self, backup_name):
+        """Prepares the UI and starts a background thread to detect a newly inserted USB drive for restoration"""
         self.selected_backup = backup_name
         self.scanning = True
         self.initial_drives = self.get_drive_list()
@@ -58,9 +59,11 @@ class ProcessStatusPanelRestore(wx.Panel):
         threading.Thread(target=self.scan_loop, daemon=True).start()
 
     def get_drive_list(self):
+        """Retrieves a list of currently mounted drive letters on the local machine"""
         return [f"{letter}:\\" for letter in string.ascii_uppercase if os.path.exists(f"{letter}:\\")]
 
     def scan_loop(self):
+        """Continuously monitors for new drives and triggers the restoration process upon detection"""
         while self.scanning:
             current_drives = self.get_drive_list()
             new_found = [d for d in current_drives if d not in self.initial_drives]
@@ -71,11 +74,12 @@ class ProcessStatusPanelRestore(wx.Panel):
             time.sleep(1)
 
     def on_cancel_search(self):
-        """עוצר סריקה וחוזר לתפריט"""
+        """Stops the USB monitoring process and redirects the user to the main application menu"""
         self.scanning = False
         self.controller.show_screen("main_app")
 
     def on_device_detected(self, drive_letter):
+        """Updates the UI to reflect drive detection and sends a request to the server to begin file restoration"""
         self.scanning = False
         self.cancel_button.Hide()
 
@@ -90,7 +94,7 @@ class ProcessStatusPanelRestore(wx.Panel):
                      dok_path=drive_letter)
 
     def set_final_status(self, success):
-        """מעדכן סטטוס סופי ומציג כפתור חזור בודד"""
+        """Displays the final outcome of the restoration process and provides navigation back to the menu"""
         self.scanning = False
 
         if success:

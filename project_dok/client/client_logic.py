@@ -1,5 +1,4 @@
 import time
-
 import actions.cypher_files
 import client_com
 from actions.cypher_files import decrypt_file, encrypt_file
@@ -14,11 +13,11 @@ import sys
 import ctypes
 import logging
 
-
-
 class clientLogic:
+    """Orchestrates the client's internal operations, including file encryption/decryption, monitoring, and backup queue management"""
 
     def __init__(self):
+        """Initializes queues, communication layers, event subscriptions, and logging for the client application"""
         self.restoreQ = queue.Queue()
         self.back_up_list = []
         self.key = None
@@ -39,6 +38,7 @@ class clientLogic:
 
 
     def handle_send_files(self, msgQ):
+        """Background thread that continuously processes the backup queue and ensures files are sent when connection is available"""
         log = logging.getLogger("logs.log")
         log.debug("Thread is now running! - Debug")
         while True:
@@ -69,8 +69,8 @@ class clientLogic:
                     break
             time.sleep(0.5)
 
-    ## לערוך
     def _get_files(self):
+        """Reads the local hidden backup file to retrieve paths of files waiting for re-transmission"""
         if getattr(sys, 'frozen', False):
             base_path = os.path.dirname(sys.executable)
         else:
@@ -86,21 +86,24 @@ class clientLogic:
             return []
 
     def get_key(self, user_name, password):
+        """Generates a cryptographic key based on user credentials for local file protection"""
         self.key = actions.cypher_files.create_key(user_name= user_name, password= password)
         self.user_name = user_name
 
     def send_back_up(self, file_path):
-
+        """Extracts directory and filename to initiate a backup transfer via the communication module"""
         path = os.path.dirname(file_path)
         file_name = os.path.basename(file_path)
         return self.client_comm.send_file(file_name=file_name, path=path, user_name=self.user_name)
 
     def monitor_file(self, file_path):
+        """Decrypts the target file and launches a monitor thread to watch for its closure"""
         self.logging.debug(f"got into the monitor file :)")
         decrypt_file(file_path, key=self.key)
         FileOpenerMonitor(file_path, self.restoreQ)
 
     def save_files_to_send(self, file_path):
+        """Appends a file path to the offline queue file, maintaining hidden and system file attributes on Windows"""
         is_frozen = getattr(sys, 'frozen', False)
         base_path = os.path.dirname(sys.executable if is_frozen else os.path.abspath(__file__))
         backup_path = os.path.join(base_path, ".send_back_up")
@@ -122,6 +125,7 @@ class clientLogic:
             pass
 
     def dell_back_up_list(self, file_path):
+        """Removes a successfully sent file path from the offline backup list and restores file attributes"""
         is_frozen = getattr(sys, 'frozen', False)
         base_path = os.path.dirname(sys.executable if is_frozen else os.path.abspath(__file__))
         backup_path = os.path.join(base_path, ".send_back_up")
@@ -138,13 +142,12 @@ class clientLogic:
                 ctypes.windll.kernel32.SetFileAttributesW(backup_path, 0x06)
 
     def back_up_empty(self):
+        """Checks the size of the backup queue file to determine if any tasks are pending"""
         is_frozen = getattr(sys, 'frozen', False)
         base_path = os.path.dirname(sys.executable if is_frozen else os.path.abspath(__file__))
         backup_path = os.path.join(base_path, ".send_back_up")
 
         return os.path.getsize(backup_path) == 0
-
-
 
 
 if __name__ == '__main__':

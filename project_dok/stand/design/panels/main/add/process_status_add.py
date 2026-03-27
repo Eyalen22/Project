@@ -3,6 +3,7 @@ from design.settings import *
 
 class ProcessStatusPanelAdd(wx.Panel):
     def __init__(self, parent, controller):
+        """Initializes the status tracking panel that displays the progress of the DOK file download"""
         super().__init__(parent)
         self.controller = controller
         self.SetBackgroundColour(BG_COLOR)
@@ -26,6 +27,7 @@ class ProcessStatusPanelAdd(wx.Panel):
         self.SetSizer(self.sizer)
 
     def show_waiting(self):
+        """Updates the UI to a waiting state while files are being downloaded to the DOK"""
         self.status_title.SetLabel("WAIT FOR DOWNLOADING YOUR FILES")
         self.status_title.SetForegroundColour("#FFD700") # צהוב
         self.detail_text.SetLabel("אנא אל תנתק את ה-DOK מהמחשב ברגע זה...")
@@ -33,6 +35,7 @@ class ProcessStatusPanelAdd(wx.Panel):
         self.Layout()
 
     def set_final_status(self, success=True):
+        """Displays the final success or failure message and enables the return button"""
         if success:
             self.status_title.SetLabel("download was a Success")
             self.status_title.SetForegroundColour("#00FF00") # ירוק

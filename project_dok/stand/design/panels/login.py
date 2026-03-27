@@ -1,8 +1,10 @@
 import wx
 from design.settings import *
 from pubsub import pub
+
 class LoginPanel(wx.Panel):
     def __init__(self, parent, controller):
+        """Initializes the login panel UI components including input fields and navigation buttons"""
         super().__init__(parent)
         self.controller = controller
         self.SetBackgroundColour(BG_COLOR)
@@ -37,6 +39,7 @@ class LoginPanel(wx.Panel):
         self.SetSizer(sizer)
 
     def on_submit(self, event):
+        """Validates input fields and publishes a login request message if credentials are provided"""
         user_name = self.user.GetValue().strip()
         password = self.pwd.GetValue().strip()
 

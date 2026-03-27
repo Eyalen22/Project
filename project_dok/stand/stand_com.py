@@ -11,8 +11,8 @@ from shared.symmetric_cypher import SymmetricCipher
 
 class StandCommunication:
 
-
     def __init__(self, server_ip, port, recvQ):
+        """Initializes the communication class, sets up the socket, and starts the main listener thread"""
         self.my_socket = socket.socket()
         self.server_ip = server_ip
         self.port = port
@@ -22,6 +22,7 @@ class StandCommunication:
         threading.Thread(target=self._mainLoop).start()
 
     def _mainLoop(self):
+        """Connects to the server, performs key exchange, and enters a loop to receive encrypted messages"""
         try:
             self.my_socket.connect((self.server_ip, self.port))
         except Exception as e:
@@ -44,8 +45,8 @@ class StandCommunication:
             else:
                 self._recv_file(msg)
 
-
     def _recv_file(self, msg):
+        """Handles the reception of files from the server, including decryption and saving to the Downloads folder"""
         opcode, parts = stand_protocol.unpack(msg)
         if not parts[2].isdigit():
             self._client_close()
@@ -84,9 +85,7 @@ class StandCommunication:
                 print("New file saved to:", full_file_path)
 
     def _change_key(self):
-        """
-        get's the same key as the server
-        """
+        """Performs a secure key exchange with the server using asymmetric encryption to establish a symmetric key"""
         server_pub_key = None
         try:
             len_pub = int(self.my_socket.recv(4).decode())
@@ -110,21 +109,13 @@ class StandCommunication:
         else:
             print("error")
 
-
     def _client_close(self):
-        """
-        closing socket
-        :return: None
-        """
+        """Closes the client socket connection and terminates the program"""
         self.my_socket.close()
         sys.exit()
 
     def send_msg(self, msg):
-        """
-        send a msg to the server
-        :param msg:str
-        :return:None
-        """
+        """Encrypts a string message and sends it to the server with a length header"""
         if self.cipher:
             new_msg = self.cipher.encrypt(msg.encode('utf-8'))
             len_msg = int.to_bytes(len(new_msg), 4, "big")
@@ -142,5 +133,3 @@ if __name__ == '__main__':
         time.sleep(0.3)
         while True:
             pass
-
-

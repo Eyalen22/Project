@@ -1,18 +1,18 @@
 import socket
 import threading
 import time
-
 import select
 import queue
 import os
-
 import server_protocol
 from shared.asymmetric_cypher import AsymmetricCipher
 from shared.symmetric_cypher import SymmetricCipher
 
 class ServerCommunication:
+    """Manages low-level network communications, secure key exchange, and file transfers using non-blocking sockets"""
 
     def __init__(self, port, recvQ):
+        """Initializes the server socket, cryptography tools, and starts the main processing loop in a background thread"""
         self.server_socket = socket.socket()
         self.port = port
         self.recvQ = recvQ
@@ -22,6 +22,7 @@ class ServerCommunication:
         threading.Thread(target=self._mainLoop).start()
 
     def _mainLoop(self):
+        """Monitors all open sockets for incoming connections or data using the select multiplexing module"""
         self.server_socket.bind(('0.0.0.0', self.port))
         self.server_socket.listen(5)
         while True:
@@ -76,9 +77,9 @@ class ServerCommunication:
             self.open_clients[client_soc] = [client_ip, SymmetricCipher(symmetric_key)]
             print(f"Server: Secure channel established with {client_ip} , {symmetric_key}")
 
-    ## make pretty ##
 
     def _recv_file(self, client_soc, msg):
+        """Handles incoming file streams by unpacking protocol metadata and saving decrypted data to the server storage"""
         opcode, parts =  server_protocol.unpack(msg)
         if not parts[2].isdigit():
             self._close_client(client_soc)
@@ -176,11 +177,7 @@ class ServerCommunication:
 
 
     def check_ip_values(self, ip:str) -> str:
-        """
-
-        :param ip:
-        :return:
-        """
+        """Validates and assigns a unique virtual IP for local connections to avoid dictionary collisions"""
         is_ip_exist = True
         if ip not in [client_info[0] for client_info in self.open_clients.values()]:
             print(f"ip is valid: {ip}")
@@ -216,18 +213,3 @@ if __name__ == '__main__':
     myQ = queue.Queue()
     myComm = ServerCommunication(2222, myQ)
     time.sleep(1)
-    while True:
-        if not myQ.empty():
-            ip, msg = myQ.get()
-            opcode, clear_msg = server_protocol.unpack(msg)
-            print(f"opcode = {opcode}, params = {clear_msg}")
-            if opcode == "01":
-                myComm.send_msg(ip, server_protocol.pack_status("03", "nice try"))
-            else:
-                myComm.send_msg(ip, server_protocol.pack_status("00", "got it man"))
-
-
-
-
-
-

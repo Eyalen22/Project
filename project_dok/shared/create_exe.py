@@ -8,6 +8,8 @@ from pathlib import Path
 
 
 def run_full_process(drive_letter, username, password, mail):
+    """Executes the full automated build process: hashes credentials, packages the script into an EXE, and transfers it to the USB drive"""
+    #לשנות לפי איפה שנמצא הקובץ המחשב חשוב בטירוף אחרת ההורדה לא תעבוד
     base_folder = Path(r"E:/Project/project_dok/client")
     main_script = base_folder / "client_logic.py"
     vault_path = base_folder / ".auth_vault"
@@ -28,7 +30,7 @@ def run_full_process(drive_letter, username, password, mail):
 
         print(f"Packaging {exe_name}.exe... Please wait.")
 
-        # 2. הרצת PyInstaller (חייב strings)
+        # 2. Running PyInstaller (Requires strings)
         PyInstaller.__main__.run([
             str(main_script),
             '--onefile',
@@ -40,12 +42,12 @@ def run_full_process(drive_letter, username, password, mail):
             '--log-level=WARN'
         ])
 
-        # 3. העברה ל-DOK וניהול הגיבוי
+        # 3. Moving to DOK and managing the backup file
         source_exe = Path("dist") / f"{exe_name}.exe"
 
         if source_exe.exists():
             print(f"Copying EXE to {usb_drive_str}...")
-            # שימוש ב-shutil להעתקה
+            # Use shutil for file copying
             shutil.copy2(source_exe, final_exe_path)
         else:
             print("Error: EXE was not created.")

@@ -3,6 +3,7 @@ from design.settings import *
 
 class WelcomePanel(wx.Panel):
     def __init__(self, parent, controller):
+        """Initializes the starting welcome screen with navigation options for login and registration"""
         super().__init__(parent)
         self.controller = controller
         self.SetBackgroundColour(BG_COLOR)

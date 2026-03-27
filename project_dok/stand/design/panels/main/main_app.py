@@ -2,9 +2,9 @@ import wx
 from design.settings import *
 from pubsub import pub  # אל תשכח לייבא את pub
 
-
 class MainAppPanel(wx.Panel):
     def __init__(self, parent, controller):
+        """Initializes the main command center panel with navigation buttons and session information"""
         super().__init__(parent)
         self.controller = controller
         self.SetBackgroundColour(BG_COLOR)
@@ -43,14 +43,14 @@ class MainAppPanel(wx.Panel):
 
         self.SetSizer(main_sizer)
 
-    # --- הפונקציה החדשה שביקשת ---
     def on_restore_click(self, event):
-        """שליחת בקשה ל-Logic לקבלת רשימת ה-DOKs לפני המעבר למסך"""
+        """Requests the list of available DOKs from the logic layer before transitioning to the restore screen"""
         wx.CallAfter(pub.sendMessage, "get_user_doks", user_name=self.username)
         self.btn_restore.SetLabel("LOADING LIST...")
         self.btn_restore.Disable()
 
     def create_styled_button(self, label, bg, border_color):
+        """Creates a button with custom styling and hover effects for a consistent UI look"""
         btn = wx.Button(self, label=label, size=(280, 60))
         btn.SetBackgroundColour(bg)
         btn.SetForegroundColour(TEXT_COLOR)
@@ -60,7 +60,7 @@ class MainAppPanel(wx.Panel):
         return btn
 
     def update_user(self, username):
-        """מעדכן את שם המשתמש ומאפס את מצב הכפתורים"""
+        """Updates the displayed username and resets the interactive state of the control buttons"""
         self.username = username
         self.user_welcome.SetLabel(f"Active Session: {username.upper()}")
         self.btn_restore.SetLabel("RESTORE BACKUP")  # מחזיר את הטקסט המקורי
@@ -68,5 +68,5 @@ class MainAppPanel(wx.Panel):
         self.Layout()  # מרענן את התצוגה של הפאנל
 
     def on_logout(self, event):
+        """Triggers the logout process through the controller to clear the current session"""
         self.controller.logout_user()
-

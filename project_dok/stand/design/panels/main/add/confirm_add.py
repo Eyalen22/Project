@@ -4,6 +4,7 @@ from design.settings import *
 
 class ConfirmAddPanel(wx.Panel):
     def __init__(self, parent, controller):
+        """Initializes the confirmation panel for confirming the selected USB device before processing"""
         super().__init__(parent)
         self.controller = controller
         self.SetBackgroundColour(BG_COLOR)
@@ -40,6 +41,7 @@ class ConfirmAddPanel(wx.Panel):
         self.SetSizer(sizer)
 
     def create_styled_button(self, label, color):
+        """Creates a consistent styled button for the confirmation interface"""
         btn = wx.Button(self, label=label, size=(300, 60))
         btn.SetBackgroundColour(color)
         btn.SetForegroundColour(TEXT_COLOR)
@@ -47,14 +49,14 @@ class ConfirmAddPanel(wx.Panel):
         return btn
 
     def setup_drive(self, name, letter):
-        """מעדכן את פרטי הכונן לפני שהמסך מוצג"""
+        """Updates the device details on the panel before the screen is displayed to the user"""
         self.drive_name = name
         self.drive_letter = letter
         self.name_label.SetLabel(f"Detected: {name} ({letter})")
         self.Layout()
 
     def on_guide(self, event):
-        """הצגת הוראות למשתמש"""
+        """Displays a guide message box with instructions for safely adding a new DOK"""
         guide_msg = (
             "1. Ensure the DOK remains connected throughout the process.\n"
             "2. Do not close the application until the success message appears.\n"
@@ -63,6 +65,7 @@ class ConfirmAddPanel(wx.Panel):
         wx.MessageBox(guide_msg, "User Guide", wx.OK | wx.ICON_INFORMATION)
 
     def on_start(self, event):
+        """Transitions to the process status screen and publishes an event to start the DOK addition logic"""
         # הכנת מסך הסטטוס למצב המתנה
         self.controller.screens["process_status_add"].show_waiting()
         self.controller.show_screen("process_status_add")

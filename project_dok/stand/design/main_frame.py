@@ -12,9 +12,9 @@ from design.panels.main.add.confirm_add import ConfirmAddPanel
 from design.panels.main.add.process_status_add import ProcessStatusPanelAdd
 from design.panels.main.restore.process_status_restore import ProcessStatusPanelRestore
 
-
 class MainFrame(wx.Frame):
     def __init__(self, msg_queue):
+        """Initializes the main window, container panel, and all application screens"""
         super().__init__(None, title="Secure DOK System", size=(800, 600))
 
         self.msg_queue = msg_queue
@@ -49,7 +49,7 @@ class MainFrame(wx.Frame):
         self.timer.Start(100)
 
     def show_screen(self, name):
-        """מעבר בין מסכים + ניקוי שדות בחזרה לתפריט"""
+        """Switches between different panels and clears authentication fields when returning to the welcome screen"""
         if name == "welcome":
             self.clear_auth_fields()
         for n, p in self.screens.items():
@@ -63,12 +63,13 @@ class MainFrame(wx.Frame):
         self.container.Layout()
 
     def logout_user(self):
-        """פונקציית ניקוי רעלים - מוחקת הכל מהזיכרון"""
+        """Clears user credentials from memory and redirects to the welcome screen"""
         self.temp_user = None
         self.temp_pass = None
         self.show_screen("welcome")
 
     def on_check_queue(self, event):
+        """Periodically checks the message queue for server responses and updates the UI state accordingly"""
         try:
             msg = self.msg_queue.get_nowait()
             is_in_add_process = self.screens["process_status_add"].IsShown()
@@ -100,7 +101,7 @@ class MainFrame(wx.Frame):
             pass
 
     def handle_auth_success(self):
-        """לוגיקה לשמירת פרטים ומעבר למסך הראשי אחרי לוגין מוצלח"""
+        """Saves user information and transitions to the main application panel after successful authentication"""
         active = "login" if self.screens["login"].IsShown() else "register"
         self.temp_user = self.screens[active].user.GetValue()
         self.temp_pass = self.screens[active].pwd.GetValue()
@@ -113,7 +114,7 @@ class MainFrame(wx.Frame):
         self.show_screen("main_app")
 
     def clear_auth_fields(self):
-        """מנקה את כל שדות הטקסט של ההתחברות וההרשמה"""
+        """Clears all text input fields in the login and registration panels"""
         self.screens["login"].user.Clear()
         self.screens["login"].pwd.Clear()
         self.screens["register"].user.Clear()

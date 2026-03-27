@@ -13,8 +13,10 @@ from shared.asymmetric_cypher import AsymmetricCipher
 from shared.symmetric_cypher import SymmetricCipher
 
 class ClientCommunication:
+    """Manages secure network communication between the client and the server, including key exchange and file transmission"""
 
     def __init__(self, server_ip, port):
+        """Initializes the communication client, sets up the server address, and starts the main connection loop"""
         self.my_socket = None
         self.server_ip = server_ip
         self.port = port
@@ -24,6 +26,7 @@ class ClientCommunication:
         threading.Thread(target=self._mainLoop, daemon=False).start()
 
     def _mainLoop(self):
+        """Continuously attempts to establish and maintain a secure connection with the server"""
         while True:
             while not self.is_connected:
                 self._close_socket()
@@ -71,7 +74,7 @@ class ClientCommunication:
                 self.is_connected = True
 
     def _close_socket(self):
-        """ סגירה יסודית ללא sys.exit """
+        """ Thorough closure without sys.exit """
         self.cipher = None
         self.is_connected = False
         if self.my_socket:
@@ -116,6 +119,7 @@ class ClientCommunication:
         return self.is_connected
 
     def get_drive_name(self, drive_letter):
+        """Retrieves the volume label (name) of the drive based on its letter using Windows API"""
         drive_path = f"{drive_letter.strip(':')}:\\"
         volumeNameBuffer = ctypes.create_unicode_buffer(1024)
         ctypes.windll.kernel32.GetVolumeInformationW(
@@ -127,6 +131,7 @@ class ClientCommunication:
         return volumeNameBuffer.value
 
     def replace_drive_with_name(self, full_path, volume_name):
+        """Modifies a file path by replacing the drive letter with the volume name for consistent server-side identification"""
         drive, rest_of_path = os.path.splitdrive(full_path)
 
         if drive:
@@ -141,17 +146,3 @@ if __name__ == '__main__':
     myComm = ClientCommunication("127.0.0.1", 2222)
     for _ in range(100):
         print("mkjhjkh")
-
-
-
-    # print("[!] Client started. Press Ctrl+C to stop.")
-    # try:
-    #     while True:
-    #         index = input("press 1\n")
-    #         if index == "1":
-    #             myComm.send_msg("hi man")
-    #         time.sleep(1)
-    # except KeyboardInterrupt:
-    #     print("\nExiting...")
-
-

@@ -4,6 +4,7 @@ from pubsub import pub
 
 class RegisterPanel(wx.Panel):
     def __init__(self, parent, controller):
+        """Initializes the registration panel UI with fields for username, email, and password"""
         super().__init__(parent)
         self.controller = controller
         self.SetBackgroundColour(BG_COLOR)
@@ -44,6 +45,7 @@ class RegisterPanel(wx.Panel):
         self.SetSizer(sizer)
 
     def on_register(self, event):
+        """Collects registration data and publishes a sign-in request while storing temporary user info"""
         user_name = self.user.GetValue().strip()
         mail = self.email.GetValue().strip()
         password = self.pwd.GetValue().strip()
