@@ -26,6 +26,7 @@ class clientLogic:
         pub.subscribe(self.get_key, "get_key")
         pub.subscribe(self.monitor_file, "new_filename")
         pub.subscribe(self.save_files_to_send, "save")
+        pub.subscribe(self.back_up_all, "backup_all_requested")
         # Configure basic logging to a file
         logging.basicConfig(
             filename='logs.log',
@@ -149,6 +150,48 @@ class clientLogic:
 
         return os.path.getsize(backup_path) == 0
 
+
+    def get_all_dok_files(self):
+        """
+        Identifies the DOK drive and scans for all files EXCEPT:
+        - The EXE itself
+        - .send_back_up (the hidden queue file)
+        - OPEN_DOK (the app name/folder)
+        - log.logs
+        - System Volume Information (and everything inside)
+        """
+        if getattr(sys, 'frozen', False):
+            running_path = sys.executable
+            exe_name = os.path.basename(running_path)  # Get the EXE filename
+        else:
+            running_path = os.path.abspath(__file__)
+            exe_name = None
+        drive_root = os.path.splitdrive(running_path)[0] + os.sep
+        all_files = []
+        excluded_names = {".send_back_up", "OPEN_DOK", "logs.log"}
+        if exe_name:
+            excluded_names.add(exe_name)
+        for root, dirs, files in os.walk(drive_root):
+            if "System Volume Information" in dirs:
+                dirs.remove("System Volume Information")
+            if "OPEN_DOK" in dirs:
+                dirs.remove("OPEN_DOK")
+            for file in files:
+                if file in excluded_names:
+                    continue
+                if file.endswith(".send_back_up"):
+                    continue
+                full_path = os.path.join(root, file)
+                all_files.append(full_path)
+        return all_files
+
+    def back_up_all(self):
+        """saving every file to send back"""
+        log = logging.getLogger("logs.log")
+        files = self.get_all_dok_files()
+        log.debug(f"files - {files}")
+        for file in files:
+            self.save_files_to_send(file)
 
 if __name__ == '__main__':
     client_log = clientLogic()

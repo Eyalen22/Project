@@ -1,3 +1,4 @@
+import hashlib
 import threading
 import dok_db
 import server_com
@@ -29,8 +30,8 @@ class ServerLogic:
         """Handles new user registration by adding credentials to the database and returning a status code"""
         user_name , password, mail = params
         status = "01"
-        # Note: Password hashing should be applied here
-        if self.serverDB.add_user(username=user_name, password=password, mail=mail):
+        hashed_password = hashlib.sha256(password.encode()).hexdigest()
+        if self.serverDB.add_user(username=user_name, password=hashed_password, mail=mail):
             status = "00"
         print(f"status is - {status} - sign in")
         self.server_com.send_msg(ip, server_protocol.pack_status("00", status))
@@ -39,8 +40,8 @@ class ServerLogic:
         """Authenticates returning users by checking credentials against the database"""
         user_name , password = params
         status = "01"
-        # Note: Password hashing should be applied here
-        if self.serverDB.user_exist(user_name, password):
+        hashed_password = hashlib.sha256(password.encode()).hexdigest()
+        if self.serverDB.user_exist(user_name, hashed_password):
             status = "00"
         print(f"status is - {status} - log in")
         self.server_com.send_msg(ip, server_protocol.pack_status("01", status))

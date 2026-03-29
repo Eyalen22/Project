@@ -6,6 +6,7 @@ import wx
 from actions import cypher_files
 from pubsub import pub
 from design.Eject import LockProgressFrame
+from design.settings import SettingsDialog
 import logging
 
 class DOKExplorerFrame(wx.Frame):
@@ -31,33 +32,46 @@ class DOKExplorerFrame(wx.Frame):
         header = wx.Panel(self.panel)
         header.SetBackgroundColour(wx.Colour(30, 30, 40))
         h_sizer = wx.BoxSizer(wx.HORIZONTAL)
-
         self.back_btn = wx.Button(header, label="BACK")
         self.add_btn = wx.Button(header, label="ADD FILE")
         self.add_btn.SetBackgroundColour(wx.Colour(40, 160, 80))
         self.path_label = wx.StaticText(header, label=self.current_path)
         self.path_label.SetForegroundColour(wx.Colour(255, 255, 255))
+        self.backup_btn = wx.Button(header, label="BACKUP ALL")
+        self.backup_btn.SetBackgroundColour(wx.Colour(70, 70, 180))  # Blueish color
         self.lock_btn = wx.Button(header, label="LOCK & EJECT")
         self.lock_btn.SetBackgroundColour(wx.Colour(220, 50, 50))
-
         h_sizer.Add(self.back_btn, 0, wx.ALL, 10)
         h_sizer.Add(self.add_btn, 0, wx.ALL, 10)
         h_sizer.Add(self.path_label, 1, wx.CENTER)
+        h_sizer.Add(self.backup_btn, 0, wx.ALL, 10)
         h_sizer.Add(self.lock_btn, 0, wx.ALL, 10)
         header.SetSizer(h_sizer)
-
         self.scrolled_window = wx.ScrolledWindow(self.panel)
         self.scrolled_window.SetScrollRate(0, 20)
         self.list_sizer = wx.BoxSizer(wx.VERTICAL)
         self.scrolled_window.SetSizer(self.list_sizer)
-
+        bottom_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.settings_btn = wx.Button(self.panel, label="⚙️ SETTINGS")
+        self.settings_btn.SetBackgroundColour(wx.Colour(100, 100, 100))
+        self.settings_btn.SetForegroundColour(wx.Colour(255, 255, 255))
+        bottom_sizer.AddStretchSpacer()
+        bottom_sizer.Add(self.settings_btn, 0, wx.ALL, 10)
         main_sizer.Add(header, 0, wx.EXPAND)
         main_sizer.Add(self.scrolled_window, 1, wx.EXPAND | wx.ALL, 5)
+        main_sizer.Add(bottom_sizer, 0, wx.EXPAND)  # Adds the bottom row with Settings
         self.panel.SetSizer(main_sizer)
-
         self.back_btn.Bind(wx.EVT_BUTTON, self.go_back)
         self.add_btn.Bind(wx.EVT_BUTTON, self.on_add_file)
+        self.backup_btn.Bind(wx.EVT_BUTTON, self.on_backup_clicked)
         self.lock_btn.Bind(wx.EVT_BUTTON, self.on_lock_and_exit)
+        self.settings_btn.Bind(wx.EVT_BUTTON, self.on_settings_clicked)
+        self.panel.Bind(wx.EVT_RIGHT_DOWN, self.on_right_click)
+        self.scrolled_window.Bind(wx.EVT_RIGHT_DOWN, self.on_right_click)
+
+    def on_backup_clicked(self, event):
+        """Sends a pubsub message to trigger the backup process"""
+        wx.CallAfter(pub.sendMessage, "backup_all_requested")
 
     def on_add_file(self, event):
         """Imports external files to the drive and automatically encrypts them upon addition"""
@@ -103,21 +117,29 @@ class DOKExplorerFrame(wx.Frame):
         wx.CallAfter(self.progress_win.set_finished)
 
     def load_directory(self):
-        """Populates the list view with items from the current directory path"""
+        """Populates the list view with items and highlights folders in yellow"""
         self.list_sizer.Clear(True)
         self.path_label.SetLabel(self.current_path)
         try:
             current_exe = os.path.basename(sys.executable if getattr(sys, 'frozen', False) else __file__)
             items = sorted(os.listdir(self.current_path))
             for item in items:
-                if item.startswith('.') or item == ".auth_vault" or item == current_exe: continue
+                if item.startswith('.') or item == ".auth_vault" or item == current_exe:
+                    continue
                 full_path = os.path.join(self.current_path, item)
                 is_dir = os.path.isdir(full_path)
                 btn = wx.Button(self.scrolled_window, label=f"{'📁' if is_dir else '📄'} {item}", style=wx.BU_LEFT)
+                if is_dir:
+                    btn.SetBackgroundColour(wx.Colour(200, 170, 0))
+                    btn.SetForegroundColour(wx.Colour(0, 0, 0))  # טקסט שחור לקריאות טובה
+                else:
+                    btn.SetBackgroundColour(wx.Colour(50, 50, 60))
+                    btn.SetForegroundColour(wx.Colour(255, 255, 255))
                 btn.Bind(wx.EVT_LEFT_DCLICK, lambda e, p=full_path: self.handle_click(p))
                 btn.Bind(wx.EVT_RIGHT_DOWN, self.on_right_click)
                 self.list_sizer.Add(btn, 0, wx.EXPAND | wx.BOTTOM, 1)
-        except: pass
+        except Exception as e:
+            self.logger.error(f"Error loading directory: {e}")
         self.list_sizer.Layout()
         self.scrolled_window.FitInside()
 
@@ -138,10 +160,10 @@ class DOKExplorerFrame(wx.Frame):
 
     def on_right_click(self, event):
         """Displays a context menu for folder creation or item deletion"""
-        clicked_obj = event.GetEventObject()
         menu = wx.Menu()
         new_folder_item = menu.Append(wx.ID_ANY, "📁 תיקיה חדשה")
         self.Bind(wx.EVT_MENU, self.on_create_folder, new_folder_item)
+        clicked_obj = event.GetEventObject()
         if isinstance(clicked_obj, wx.Button) and clicked_obj != self.add_btn:
             menu.AppendSeparator()
             delete_item = menu.Append(wx.ID_ANY, "🗑️ מחק")
@@ -171,3 +193,9 @@ class DOKExplorerFrame(wx.Frame):
                 else: os.remove(path)
                 self.load_directory()
             except Exception: pass
+
+    def on_settings_clicked(self, event):
+        """פותח את חלון ההגדרות וההוראות"""
+        diag = SettingsDialog(self)
+        diag.ShowModal()
+        diag.Destroy()
