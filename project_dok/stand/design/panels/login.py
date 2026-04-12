@@ -2,6 +2,8 @@ import wx
 from design.settings import *
 from pubsub import pub
 
+
+
 class LoginPanel(wx.Panel):
     def __init__(self, parent, controller):
         """Initializes the login panel UI components including input fields and navigation buttons"""

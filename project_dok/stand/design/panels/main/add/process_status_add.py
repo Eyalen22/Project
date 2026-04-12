@@ -1,6 +1,8 @@
 import wx
 from design.settings import *
 
+
+
 class ProcessStatusPanelAdd(wx.Panel):
     def __init__(self, parent, controller):
         """Initializes the status tracking panel that displays the progress of the DOK file download"""

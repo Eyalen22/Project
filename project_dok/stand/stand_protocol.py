@@ -1,4 +1,4 @@
-## unpack ##
+    ## unpack ##
 def unpack(msg):
     """Splits the received message by the protocol delimiter and extracts the opcode and data parts"""
     new_msg = msg.split("@#2")

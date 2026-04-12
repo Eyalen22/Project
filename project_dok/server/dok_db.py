@@ -42,6 +42,18 @@ class MyDB:
         self.cursor.execute(sql, (username,))
         return not self.cursor.fetchone() is None
 
+    def user_exist(self, username, password):
+        '''
+        Checks if a user exists with the given username AND password.
+        :param username: str
+        :param password: str
+        :return: bool - True if the combination exists, False otherwise.
+        '''
+        sql = "SELECT * FROM users WHERE username = ? AND password_hash = ?"
+        self.cursor.execute(sql, (username, password))
+        result = self.cursor.fetchone()
+        return result is not None
+
 
     def user_dok_match(self, user_name, dok_name):
         '''
@@ -117,17 +129,6 @@ class MyDB:
             print(f"Error retrieving email: {e}")
             return None
 
-    def user_exist(self, username, password):
-        '''
-        Checks if a user exists with the given username AND password.
-        :param username: str
-        :param password: str
-        :return: bool - True if the combination exists, False otherwise.
-        '''
-        sql = "SELECT * FROM users WHERE username = ? AND password_hash = ?"
-        self.cursor.execute(sql, (username, password))
-        result = self.cursor.fetchone()
-        return result is not None
 
     def get_user_doks(self, username):
         """מחזירה רשימה של כל שמות ה-DOKs ששייכים למשתמש"""
