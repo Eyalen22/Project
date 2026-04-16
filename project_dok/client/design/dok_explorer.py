@@ -102,7 +102,8 @@ class DOKExplorerFrame(wx.Frame):
                     if os.path.isfile(full_path):
                         if mode == "decrypt": cypher_files.decrypt_file_name(full_path, self.key)
                         else: cypher_files.encrypt_file_name(full_path, self.key)
-        except Exception as e: print(f"General error during scan: {e}")
+        except Exception as e:
+            print(f"General error during scan: {e}")
 
     def on_lock_and_exit(self, event):
         """Transitions to the lock screen and starts the background re-encryption process"""
