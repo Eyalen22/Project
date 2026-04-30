@@ -46,13 +46,19 @@ class RegisterPanel(wx.Panel):
 
     def on_register(self, event):
         """Collects registration data and publishes a sign-in request while storing temporary user info"""
+        flag = False
+        msg = ""
         user_name = self.user.GetValue().strip()
         mail = self.email.GetValue().strip()
         password = self.pwd.GetValue().strip()
-
-        if user_name and mail and password:
+        if len(user_name) < 4 or len(user_name) > 11 or len(password) < 5:
+            msg = "user name need to be between 5 to 10 and password need to be 6 or more"
+        elif user_name and mail and password:
             self.controller.temp_user = user_name
             self.controller.temp_pass = password
+            flag = True
             wx.CallAfter(pub.sendMessage, "sign_in", user_name=user_name, mail=mail, password=password)
-        else:
-            wx.MessageBox("missing Credentials", "missing")
+        if not flag:
+            if msg == "":
+                msg = "missing Credentials"
+            wx.MessageBox(msg, "missing")
