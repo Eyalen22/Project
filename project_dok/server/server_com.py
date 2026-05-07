@@ -17,6 +17,7 @@ class ServerCommunication:
         self.port = port
         self.recvQ = recvQ
         self.asym_cipher = AsymmetricCipher()
+        self.public_key = self.asym_cipher.get_public_key()
         self.open_clients = {}      # [socket]:[ip, cipher]
 
         threading.Thread(target=self._mainLoop).start()
@@ -64,10 +65,9 @@ class ServerCommunication:
         """
         get's the same key as the client
         """
-        public_key = self.asym_cipher.get_public_key()
         try:
-            client_soc.send(str(len(public_key)).zfill(4).encode())
-            client_soc.send(public_key)
+            client_soc.send(str(len(self.public_key)).zfill(4).encode())
+            client_soc.send(self.public_key)
             len_encrypted_key = int(client_soc.recv(4).decode())
             encrypted_key = client_soc.recv(len_encrypted_key)
         except Exception as e:

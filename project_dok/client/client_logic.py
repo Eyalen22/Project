@@ -22,7 +22,7 @@ class clientLogic:
         self.back_up_list = []
         self.key = None
         self.user_name = ""
-        self.client_comm = client_com.ClientCommunication('127.0.0.1', 2222)
+        self.client_comm = client_com.ClientCommunication('192.168.4.91', 2222)
         pub.subscribe(self.get_key, "get_key")
         pub.subscribe(self.monitor_file, "new_filename")
         pub.subscribe(self.save_files_to_send, "save")
